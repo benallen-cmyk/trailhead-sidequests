@@ -62,6 +62,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px}
 .empty .icon{font-size:40px;margin-bottom:10px}
+  .edit-btn{display:inline-flex;align-items:center;gap:5px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer}
+.edit-btn:active{opacity:.7}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;align-items:flex-end}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border-radius:var(--radius) var(--radius) 0 0;padding:20px;width:100%;max-height:90vh;overflow-y:auto}
+.modal h2{font-size:18px;font-weight:700;color:var(--accent);margin-bottom:18px}
+.modal-actions{display:flex;gap:10px;margin-top:6px}
+.btn-cancel{flex:1;background:var(--border);color:var(--text);border:none;border-radius:var(--radius);padding:15px;font-size:16px;font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
@@ -235,7 +243,7 @@ function rl(q=''){
         <span class="mi">📍 ${[a.region,a.country].filter(Boolean).join(', ')}</span>
         ${a.who?`<span class="mi who">👥 ${a.who}</span>`:''}
       </div>
-      <div class="card-actions">${photosBtn}</div>
+      <div class="card-actions">${photosBtn}<button class="edit-btn" onclick="openEdit(${a._i})">✏️ Edit</button></div>
     </div>`;
   }).join('');
 }
@@ -309,6 +317,72 @@ function add(){
 
 document.getElementById('fd').value=new Date().toISOString().split('T')[0];
 rl();
+  let editIdx=null;
+
+function openEdit(idx){
+  editIdx=idx;
+  const a=av[idx];
+  document.getElementById('ed').value=a.date||'';
+  document.getElementById('en').value=a.name||'';
+  document.getElementById('et').value=a.type||'';
+  document.getElementById('ec').value=a.country||'';
+  document.getElementById('er').value=a.region||'';
+  document.getElementById('ew').value=a.who||'';
+  document.getElementById('ep').value=a.photos||'';
+  document.getElementById('editModal').classList.add('show');
+}
+
+function closeEdit(){
+  document.getElementById('editModal').classList.remove('show');
+  editIdx=null;
+}
+
+function saveEdit(){
+  if(editIdx===null)return;
+  av[editIdx]={
+    ...av[editIdx],
+    date:document.getElementById('ed').value,
+    name:document.getElementById('en').value.trim(),
+    type:document.getElementById('et').value,
+    country:document.getElementById('ec').value.trim(),
+    region:document.getElementById('er').value.trim(),
+    who:document.getElementById('ew').value.trim(),
+    photos:document.getElementById('ep').value.trim()
+  };
+  save(av);
+  closeEdit();
+  showToast('✓ Adventure updated!');
+  rl(document.querySelector('.search').value);
+}
 </script>
+  <div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h2>Edit Adventure</h2>
+    <div class="fg"><label>Date</label><input type="date" id="ed"/></div>
+    <div class="fg"><label>Adventure Name</label><input type="text" id="en" placeholder="e.g. Pen Y Fan Sunrise"/></div>
+    <div class="fg">
+      <label>Type</label>
+      <select id="et">
+        <option value="">Select type...</option>
+        <option>Hike</option><option>Run</option><option>OCR</option><option>Marathon</option>
+        <option>Trail Run</option><option>Road Trip</option><option>Holiday</option>
+        <option>Climb</option><option>Swim</option><option>Beach/Water</option>
+        <option>Gym/Training</option><option>Kayak/SUP</option><option>City Break</option>
+        <option>Gig</option><option>Photo Mission</option><option>Festival/Event</option>
+        <option>Family Trip</option><option>Other</option>
+      </select>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>Country</label><input type="text" id="ec" placeholder="e.g. UK"/></div>
+      <div class="fg"><label>Region</label><input type="text" id="er" placeholder="e.g. Wales"/></div>
+    </div>
+    <div class="fg"><label>Who With</label><input type="text" id="ew" placeholder="e.g. Helen, Theo"/></div>
+    <div class="fg"><label>Google Photos Link</label><input type="url" id="ep" placeholder="https://photos.app.goo.gl/..."/></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeEdit()">Cancel</button>
+      <button class="btn" style="flex:1" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

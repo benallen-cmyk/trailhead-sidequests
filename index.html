@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+/<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -250,11 +250,15 @@ function rs(){
   document.getElementById('sy').textContent=ty.length;
   document.getElementById('sc2').textContent=ctr.size;
   document.getElementById('sp').textContent=Object.keys(bc).length;
-  const y25=av.filter(a=>gy(a.date)===2025);
-  const mm=Math.max(...MN.map((_,i)=>y25.filter(a=>gm(a.date)===i).length),1);
-  document.getElementById('sm').innerHTML=MN.map((m,i)=>{
-    const c=y25.filter(a=>gm(a.date)===i).length;
-    return`<div class="br"><span class="bl">${m}</span><div class="bt"><div class="bf" style="width:${(c/mm)*100}%"></div></div><span class="bc">${c}</span></div>`;
+  const years=[...new Set(av.map(a=>gy(a.date)).filter(y=>y>2000))].sort((a,b)=>b-a);
+  document.getElementById('sm').innerHTML=years.map(yr=>{
+    const yav=av.filter(a=>gy(a.date)===yr);
+    const mm=Math.max(...MN.map((_,i)=>yav.filter(a=>gm(a.date)===i).length),1);
+    return`<div style="margin-bottom:20px"><div style="font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:8px">${yr}</div>`+
+    MN.map((m,i)=>{
+      const c=yav.filter(a=>gm(a.date)===i).length;
+      return`<div class="br"><span class="bl">${m}</span><div class="bt"><div class="bf" style="width:${(c/mm)*100}%"></div></div><span class="bc">${c}</span></div>`;
+    }).join('')+'</div>';
   }).join('');
   const tc2={};av.forEach(a=>{if(a.type)tc2[a.type]=(tc2[a.type]||0)+1;});
   const st2=Object.entries(tc2).sort((a,b)=>b[1]-a[1]);

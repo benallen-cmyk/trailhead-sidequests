@@ -28,9 +28,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
 .card-name{font-size:15px;font-weight:700;line-height:1.3;flex:1}
 .tbadge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--tc,var(--accent));color:#fff;white-space:nowrap;text-transform:uppercase;letter-spacing:.5px}
-.meta{display:flex;flex-wrap:wrap;gap:10px}
+.meta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
 .mi{font-size:12px;color:var(--muted)}
 .mi.who{color:var(--green)}
+.card-actions{display:flex;gap:8px;align-items:center}
+.photos-btn{display:inline-flex;align-items:center;gap:5px;background:#1a3a2a;color:var(--green);border:1px solid var(--green);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none}
+.photos-btn:active{opacity:.7}
+.add-photos-btn{display:inline-flex;align-items:center;gap:5px;background:transparent;color:var(--muted);border:1px dashed var(--border);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer}
+.add-photos-btn:active{opacity:.7}
+.photos-input-row{display:flex;gap:8px;margin-top:8px}
+.photos-input-row input{flex:1;background:var(--bg);border:1px solid var(--accent);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;outline:none}
+.photos-input-row button{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer}
 .form-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
 .form-box h2{font-size:18px;font-weight:700;margin-bottom:18px;color:var(--accent)}
 .fg{margin-bottom:14px}
@@ -98,6 +106,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="fg"><label>Region</label><input type="text" id="fr" placeholder="e.g. Wales"/></div>
     </div>
     <div class="fg"><label>Who With</label><input type="text" id="fw" placeholder="e.g. Helen, Theo"/></div>
+    <div class="fg"><label>Google Photos Link</label><input type="url" id="fp" placeholder="https://photos.app.goo.gl/..."/></div>
     <button class="btn" onclick="add()">Save Adventure</button>
   </div>
 </div>
@@ -120,53 +129,54 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 const TC={Hike:'#4ecca3',Run:'#45b7d1',OCR:'#e94560',Marathon:'#f5a623','Trail Run':'#96ceb4','Road Trip':'#dda0dd',Holiday:'#87ceeb',Climb:'#ff6b6b',Swim:'#4fc3f7','Beach/Water':'#00bcd4','Gym/Training':'#ab47bc','Kayak/SUP':'#26c6da','City Break':'#ffd54f',Gig:'#ff4081','Photo Mission':'#69f0ae','Festival/Event':'#ff6e40','Family Trip':'#a5d6a7',Other:'#78909c'};
 const IC={Hike:'🥾',Run:'🏃',OCR:'💪',Marathon:'🏅','Trail Run':'🌲','Road Trip':'🚗',Holiday:'✈️',Climb:'🧗',Swim:'🏊','Beach/Water':'🏄','Gym/Training':'🏋️','Kayak/SUP':'🛶','City Break':'🏙️',Gig:'🎸','Photo Mission':'📸','Festival/Event':'🎉','Family Trip':'👨‍👩‍👧‍👦',Other:'🌟'};
 const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
 const SEED=[
-  {date:'2025-03-13',name:'Game of Thrones Studio Tour',type:'Other',country:'UK',region:'Belfast',who:'Helen'},
-  {date:'2025-03-14',name:'Country 2 Country',type:'Gig',country:'UK',region:'Belfast',who:'Helen'},
-  {date:'2025-03-23',name:'Pen Y Fan',type:'Hike',country:'UK',region:'Wales',who:'Helen, Gruff, Kim'},
-  {date:'2025-03-29',name:'DEKA Strong',type:'Gym/Training',country:'UK',region:'Bradford-on-Avon',who:'Jackson'},
-  {date:'2025-04-08',name:'Sugarloaf',type:'Hike',country:'UK',region:'Wales',who:'Theo, Jackson'},
-  {date:'2025-04-21',name:'Infinity Trampoline Park',type:'Other',country:'UK',region:'Cardiff',who:'Helen, Theo, Jackson'},
-  {date:'2025-04-27',name:'London Marathon',type:'Marathon',country:'UK',region:'London',who:''},
-  {date:'2025-05-10',name:"Tough Mudder - Europe's Toughest Infinity",type:'OCR',country:'UK',region:'Henley-on-Thames',who:'Sam, Kim'},
-  {date:'2025-05-17',name:'Good Times 2025',type:'Photo Mission',country:'UK',region:'Chipping Sodbury',who:'Helen, Tom'},
-  {date:'2025-05-18',name:'Spartan London West',type:'OCR',country:'UK',region:'Henley-on-Thames',who:''},
-  {date:'2025-06-01',name:'Go Ruck Wales - First Podium!',type:'Trail Run',country:'UK',region:'Wales',who:''},
-  {date:'2025-06-05',name:'Lake District/Scotland/Peak District Road Trip',type:'Road Trip',country:'UK',region:'Lake District, Scotland, Peak District',who:'Helen, Theo, Jackson'},
-  {date:'2025-06-22',name:'Zach Bryan - 1st solo gig',type:'Gig',country:'UK',region:'Dublin',who:''},
-  {date:'2025-06-27',name:"World's Toughest Mudder - 45 Miles",type:'OCR',country:'UK',region:'Lincolnshire',who:'Helen, Theo, Sam, Kerry'},
-  {date:'2025-07-05',name:'Tough Mudder Infinity',type:'OCR',country:'UK',region:'Lincolnshire',who:'Sam'},
-  {date:'2025-07-13',name:'Rhossili Bay',type:'Beach/Water',country:'UK',region:'Wales',who:'Helen, Theo, Jackson'},
-  {date:'2025-08-03',name:"Theo's Track Day",type:'Other',country:'UK',region:'Oxford',who:'Helen, Theo, Jackson'},
-  {date:'2025-08-12',name:'River Walk',type:'Hike',country:'UK',region:'Frampton Cotterell',who:'Theo, Jackson'},
-  {date:'2025-08-16',name:'Tough Mudder South West',type:'OCR',country:'UK',region:'Badminton',who:'Helen'},
-  {date:'2025-08-17',name:'Spartan South West',type:'OCR',country:'UK',region:'Badminton',who:'Helen, Holly, Theo, Jackson'},
-  {date:'2025-08-18',name:'Tenerife',type:'Holiday',country:'Spain',region:'Tenerife',who:'Helen, Theo, Jackson'},
-  {date:'2025-08-23',name:'Sea Kayaking',type:'Beach/Water',country:'Spain',region:'Tenerife',who:'Theo'},
-  {date:'2025-08-24',name:'Surfing',type:'Beach/Water',country:'Spain',region:'Tenerife',who:'Jackson'},
-  {date:'2025-08-27',name:'Sunset & Stargazing - Mount Teide',type:'Photo Mission',country:'Spain',region:'Tenerife',who:'Helen, Theo, Jackson'},
-  {date:'2025-09-04',name:'Canada Trip',type:'Holiday',country:'Canada',region:'Calgary, Banff',who:''},
-  {date:'2025-09-05',name:'Exploring Calgary',type:'City Break',country:'Canada',region:'Calgary',who:''},
-  {date:'2025-09-05',name:'Cirque du Soleil',type:'Festival/Event',country:'Canada',region:'Calgary',who:''},
-  {date:'2025-09-07',name:'Lake Louise',type:'Hike',country:'Canada',region:'Banff',who:''},
-  {date:'2025-09-08',name:'Climbed Mount Norquay',type:'Climb',country:'Canada',region:'Banff',who:''},
-  {date:'2025-09-09',name:'Cycled to Johnston Canyon',type:'Other',country:'Canada',region:'Banff',who:''},
-  {date:'2025-09-10',name:'Sunrise at Moraine Lake',type:'Hike',country:'Canada',region:'Banff',who:''},
-  {date:'2025-09-10',name:'Horseback Ride on the Bow River',type:'Other',country:'Canada',region:'Banff',who:''},
-  {date:'2025-09-11',name:'Hiked Tunnel Mountain',type:'Hike',country:'Canada',region:'Banff',who:''},
-  {date:'2025-09-12',name:'Rafting on Kananaskis River',type:'Beach/Water',country:'Canada',region:'Banff',who:''},
-  {date:'2025-09-20',name:'Tough Mudder London South',type:'OCR',country:'UK',region:'West Sussex',who:'Helen, Sam'},
-  {date:'2025-09-27',name:"Jackson's First Riding Lesson",type:'Other',country:'UK',region:'Yate',who:'Jackson'},
-  {date:'2025-09-28',name:'Exmouth 5K',type:'Run',country:'UK',region:'Exmouth',who:'Kenco'},
-  {date:'2025-10-04',name:'Spartan London South East',type:'OCR',country:'UK',region:'West Sussex',who:'Helen, Theo, Jackson, Sam, Holly, Jo, Nick, Dylan'},
-  {date:'2025-10-27',name:'Wye Valley Hike',type:'Hike',country:'UK',region:'Wales',who:'Holly'},
-  {date:'2025-11-09',name:'Movember 10km',type:'Run',country:'UK',region:'Bristol',who:'Nick, Holly'},
-  {date:'2025-11-23',name:'Silverstone Half Marathon',type:'Run',country:'UK',region:'Silverstone',who:'Kenco'},
-  {date:'2025-11-30',name:'Mojo Active 5km',type:'OCR',country:'UK',region:'Bristol',who:'Helen, Theo, Jackson, Jo, Holly, Dylan'},
-  {date:'2026-01-25',name:'Longleat 10km',type:'Run',country:'UK',region:'Wiltshire',who:'Helen, Theo, Jackson, Nick, Jo, Holly, Dylan'}
+  {date:'2025-03-13',name:'Game of Thrones Studio Tour',type:'Other',country:'UK',region:'Belfast',who:'Helen',photos:'https://photos.app.goo.gl/XjMVTSKAe1Yo91Ur9'},
+  {date:'2025-03-14',name:'Country 2 Country',type:'Gig',country:'UK',region:'Belfast',who:'Helen',photos:'https://photos.app.goo.gl/f1PoBKuodvCSWULx7'},
+  {date:'2025-03-23',name:'Pen Y Fan',type:'Hike',country:'UK',region:'Wales',who:'Helen, Gruff, Kim',photos:'https://photos.app.goo.gl/QTZYMJm1TpMqdcp47'},
+  {date:'2025-03-29',name:'DEKA Strong',type:'Gym/Training',country:'UK',region:'Bradford-on-Avon',who:'Jackson',photos:'https://photos.app.goo.gl/4Rf77UBYsEoFiZv66'},
+  {date:'2025-04-08',name:'Sugarloaf',type:'Hike',country:'UK',region:'Wales',who:'Theo, Jackson',photos:'https://photos.app.goo.gl/CeDDVUYfsA1andVj7'},
+  {date:'2025-04-21',name:'Infinity Trampoline Park',type:'Other',country:'UK',region:'Cardiff',who:'Helen, Theo, Jackson',photos:''},
+  {date:'2025-04-27',name:'London Marathon',type:'Marathon',country:'UK',region:'London',who:'',photos:'https://photos.app.goo.gl/APHzwqj6j1cnjC9SA'},
+  {date:'2025-05-10',name:"Tough Mudder - Europe's Toughest Infinity",type:'OCR',country:'UK',region:'Henley-on-Thames',who:'Sam, Kim',photos:'https://photos.app.goo.gl/d1eWgrsVmoaQ5mkVA'},
+  {date:'2025-05-17',name:'Good Times 2025',type:'Photo Mission',country:'UK',region:'Chipping Sodbury',who:'Helen, Tom',photos:'https://photos.app.goo.gl/5FKEujkyvvf7oVLo6'},
+  {date:'2025-05-18',name:'Spartan London West',type:'OCR',country:'UK',region:'Henley-on-Thames',who:'',photos:'https://photos.app.goo.gl/bZXHc6T7Ny6Ft9fJA'},
+  {date:'2025-06-01',name:'Go Ruck Wales - First Podium!',type:'Trail Run',country:'UK',region:'Wales',who:'',photos:'https://photos.app.goo.gl/rLG9AogS72VaYhVw9'},
+  {date:'2025-06-05',name:'Lake District/Scotland/Peak District Road Trip',type:'Road Trip',country:'UK',region:'Lake District, Scotland, Peak District',who:'Helen, Theo, Jackson',photos:'https://photos.app.goo.gl/88V1ieBZSTueLQ2r7'},
+  {date:'2025-06-22',name:'Zach Bryan - 1st solo gig',type:'Gig',country:'UK',region:'Dublin',who:'',photos:'https://photos.app.goo.gl/iYL9prRkbFZT6rGm7'},
+  {date:'2025-06-27',name:"World's Toughest Mudder - 45 Miles",type:'OCR',country:'UK',region:'Lincolnshire',who:'Helen, Theo, Sam, Kerry',photos:'https://photos.app.goo.gl/pQrJNcDUQmySg9py5'},
+  {date:'2025-07-05',name:'Tough Mudder Infinity',type:'OCR',country:'UK',region:'Lincolnshire',who:'Sam',photos:'https://photos.app.goo.gl/wqmpbNkh6tbamqrq7'},
+  {date:'2025-07-13',name:'Rhossili Bay',type:'Beach/Water',country:'UK',region:'Wales',who:'Helen, Theo, Jackson',photos:'https://photos.app.goo.gl/vYFPsdsGahiDfYQB7'},
+  {date:'2025-08-03',name:"Theo's Track Day",type:'Other',country:'UK',region:'Oxford',who:'Helen, Theo, Jackson',photos:'https://photos.app.goo.gl/zNJza56yirSZfafh7'},
+  {date:'2025-08-12',name:'River Walk',type:'Hike',country:'UK',region:'Frampton Cotterell',who:'Theo, Jackson',photos:'https://photos.app.goo.gl/63TaZQJAR4jGUUi67'},
+  {date:'2025-08-16',name:'Tough Mudder South West',type:'OCR',country:'UK',region:'Badminton',who:'Helen',photos:'https://photos.app.goo.gl/uRsfF29rtYqtYfiE8'},
+  {date:'2025-08-17',name:'Spartan South West',type:'OCR',country:'UK',region:'Badminton',who:'Helen, Holly, Theo, Jackson',photos:'https://photos.app.goo.gl/whE8J35hUFQFqLyQ6'},
+  {date:'2025-08-18',name:'Tenerife',type:'Holiday',country:'Spain',region:'Tenerife',who:'Helen, Theo, Jackson',photos:'https://photos.app.goo.gl/XDG5t9GDo2G2omoR7'},
+  {date:'2025-08-23',name:'Sea Kayaking',type:'Beach/Water',country:'Spain',region:'Tenerife',who:'Theo',photos:'https://photos.app.goo.gl/3od99i6XVA87bLrQ6'},
+  {date:'2025-08-24',name:'Surfing',type:'Beach/Water',country:'Spain',region:'Tenerife',who:'Jackson',photos:'https://photos.app.goo.gl/pwtWVcsg97RTd2D2A'},
+  {date:'2025-08-27',name:'Sunset & Stargazing - Mount Teide',type:'Photo Mission',country:'Spain',region:'Tenerife',who:'Helen, Theo, Jackson',photos:'https://photos.app.goo.gl/EMqmqSjETs6Ew6LNA'},
+  {date:'2025-09-04',name:'Canada Trip',type:'Holiday',country:'Canada',region:'Calgary, Banff',who:'',photos:'https://photos.app.goo.gl/3zx9mB4JNzf22NYB9'},
+  {date:'2025-09-05',name:'Exploring Calgary',type:'City Break',country:'Canada',region:'Calgary',who:'',photos:'https://photos.app.goo.gl/Yxus2o7bJvACe4c18'},
+  {date:'2025-09-05',name:'Cirque du Soleil',type:'Festival/Event',country:'Canada',region:'Calgary',who:'',photos:'https://photos.app.goo.gl/4XYzHoL2DEJPvJD36'},
+  {date:'2025-09-07',name:'Lake Louise',type:'Hike',country:'Canada',region:'Banff',who:'',photos:''},
+  {date:'2025-09-08',name:'Climbed Mount Norquay',type:'Climb',country:'Canada',region:'Banff',who:'',photos:''},
+  {date:'2025-09-09',name:'Cycled to Johnston Canyon',type:'Other',country:'Canada',region:'Banff',who:'',photos:''},
+  {date:'2025-09-10',name:'Sunrise at Moraine Lake',type:'Hike',country:'Canada',region:'Banff',who:'',photos:''},
+  {date:'2025-09-10',name:'Horseback Ride on the Bow River',type:'Other',country:'Canada',region:'Banff',who:'',photos:''},
+  {date:'2025-09-11',name:'Hiked Tunnel Mountain',type:'Hike',country:'Canada',region:'Banff',who:'',photos:''},
+  {date:'2025-09-12',name:'Rafting on Kananaskis River',type:'Beach/Water',country:'Canada',region:'Banff',who:'',photos:''},
+  {date:'2025-09-20',name:'Tough Mudder London South',type:'OCR',country:'UK',region:'West Sussex',who:'Helen, Sam',photos:''},
+  {date:'2025-09-27',name:"Jackson's First Riding Lesson",type:'Other',country:'UK',region:'Yate',who:'Jackson',photos:''},
+  {date:'2025-09-28',name:'Exmouth 5K',type:'Run',country:'UK',region:'Exmouth',who:'Kenco',photos:''},
+  {date:'2025-10-04',name:'Spartan London South East',type:'OCR',country:'UK',region:'West Sussex',who:'Helen, Theo, Jackson, Sam, Holly, Jo, Nick, Dylan',photos:''},
+  {date:'2025-10-27',name:'Wye Valley Hike',type:'Hike',country:'UK',region:'Wales',who:'Holly',photos:''},
+  {date:'2025-11-09',name:'Movember 10km',type:'Run',country:'UK',region:'Bristol',who:'Nick, Holly',photos:''},
+  {date:'2025-11-23',name:'Silverstone Half Marathon',type:'Run',country:'UK',region:'Silverstone',who:'Kenco',photos:''},
+  {date:'2025-11-30',name:'Mojo Active 5km',type:'OCR',country:'UK',region:'Bristol',who:'Helen, Theo, Jackson, Jo, Holly, Dylan',photos:''},
+  {date:'2026-01-25',name:'Longleat 10km',type:'Run',country:'UK',region:'Wiltshire',who:'Helen, Theo, Jackson, Nick, Jo, Holly, Dylan',photos:''}
 ];
 
-const K='ben_adv_v1';
+const K='ben_adv_v2';
 function load(){try{const s=localStorage.getItem(K);if(s)return JSON.parse(s);}catch(e){}return[...SEED];}
 function save(d){try{localStorage.setItem(K,JSON.stringify(d));}catch(e){}}
 let av=load();
@@ -175,15 +185,43 @@ function fd2(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString
 function gy(d){return d?new Date(d+'T00:00:00').getFullYear():0;}
 function gm(d){return d?new Date(d+'T00:00:00').getMonth():-1;}
 
+function showPhotoInput(idx){
+  const el=document.getElementById('pi-'+idx);
+  if(el)el.style.display=el.style.display==='none'?'flex':'none';
+}
+
+function savePhoto(idx){
+  const val=document.getElementById('piv-'+idx).value.trim();
+  if(!val)return;
+  av[idx].photos=val;
+  save(av);
+  showToast('📷 Photos link saved!');
+  rl(document.querySelector('.search').value);
+}
+
+function showToast(msg='✓ Saved!'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
 function rl(q=''){
   q=q.toLowerCase();
-  const s=[...av].sort((a,b)=>b.date.localeCompare(a.date));
+  const s=[...av].map((a,i)=>({...a,_i:i})).sort((a,b)=>b.date.localeCompare(a.date));
   const f=q?s.filter(a=>[a.name,a.type,a.country,a.region,a.who].join(' ').toLowerCase().includes(q)):s;
   document.getElementById('badge').textContent=av.length;
   const el=document.getElementById('ll');
   if(!f.length){el.innerHTML='<div class="empty"><div class="icon">🔍</div>No adventures found</div>';return;}
   el.innerHTML=f.map(a=>{
     const c=TC[a.type]||'#e94560';
+    const photosBtn=a.photos
+      ?`<a class="photos-btn" href="${a.photos}" target="_blank">📷 Photos</a>`
+      :`<button class="add-photos-btn" onclick="showPhotoInput(${a._i})">＋ Add Photos</button>
+       <div class="photos-input-row" id="pi-${a._i}" style="display:none">
+         <input type="url" id="piv-${a._i}" placeholder="Paste Google Photos link..."/>
+         <button onclick="savePhoto(${a._i})">Save</button>
+       </div>`;
     return`<div class="card" style="--tc:${c}">
       <div class="card-top">
         <div class="card-name">${IC[a.type]||'🌟'} ${a.name}</div>
@@ -194,6 +232,7 @@ function rl(q=''){
         <span class="mi">📍 ${[a.region,a.country].filter(Boolean).join(', ')}</span>
         ${a.who?`<span class="mi who">👥 ${a.who}</span>`:''}
       </div>
+      <div class="card-actions">${photosBtn}</div>
     </div>`;
   }).join('');
 }
@@ -228,42 +267,4 @@ function rs(){
 }
 
 function sv(n,btn){
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('view-'+n).classList.add('active');
-  btn.classList.add('active');
-  if(n==='stats')rs();
-  if(n==='log')rl();
-}
-
-function add(){
-  const date=document.getElementById('fd').value;
-  const name=document.getElementById('fn').value.trim();
-  if(!date||!name){alert('Date and name are required.');return;}
-  av.push({date,name,
-    type:document.getElementById('ft').value,
-    country:document.getElementById('fc').value.trim(),
-    region:document.getElementById('fr').value.trim(),
-    who:document.getElementById('fw').value.trim()
-  });
-  save(av);
-  ['fd','fn','fc','fr','fw'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('ft').value='';
-  document.getElementById('fd').value=new Date().toISOString().split('T')[0];
-  const t=document.getElementById('toast');
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2500);
-  setTimeout(()=>{
-    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-    document.getElementById('view-log').classList.add('active');
-    document.querySelectorAll('.nav-btn')[0].classList.add('active');
-    rl();
-  },800);
-}
-
-document.getElementById('fd').value=new Date().toISOString().split('T')[0];
-rl();
-</script>
-</body>
-</html>
+  document.querySelectorAll('.vi

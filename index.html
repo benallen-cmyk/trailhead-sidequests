@@ -7,6 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <title>Ben's Adventures</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root{--bg:#0f0f1a;--card:#1a1a2e;--accent:#e94560;--accent2:#f5a623;--text:#fff;--muted:#8888aa;--border:#2a2a4a;--green:#4ecca3;--radius:14px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -76,6 +78,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ss-chevron.open{transform:rotate(180deg)}
 .ss-body{display:none}
 .ss-body.open{display:block}
+  #view-map{padding:0;padding-bottom:0}
+#mapid{height:calc(100vh - 110px);width:100%}
+.map-card-overlay{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-radius:var(--radius) var(--radius) 0 0;padding:20px;z-index:1000;border-top:1px solid var(--border);transform:translateY(100%);transition:transform 0.3s ease}
+.map-card-overlay.show{transform:translateY(0)}
+.map-card-overlay .card-name{font-size:16px;font-weight:700;margin-bottom:10px}
+.map-card-overlay .meta{margin-bottom:12px}
+.map-close{position:absolute;top:16px;right:16px;background:var(--border);border:none;color:var(--text);border-radius:50%;width:28px;height:28px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cluster-label{background:none!important;border:none!important;box-shadow:none!important;color:#fff!important;font-weight:700!important;font-size:11px!important}
 </style>
 </head>
 <body>
@@ -89,6 +99,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <button class="nav-btn active" onclick="sv('log',this)">📋 Log</button>
     <button class="nav-btn" onclick="sv('add',this)">➕ Add</button>
     <button class="nav-btn" onclick="sv('stats',this)">📊 Stats</button>
+<button class="nav-btn" onclick="sv('map',this)">🗺️ Map</button>
   </nav>
 </div>
 
@@ -293,7 +304,8 @@ function sv(n,btn){
   document.getElementById('view-'+n).classList.add('active');
   btn.classList.add('active');
   if(n==='stats')rs();
-  if(n==='log')rl();
+if(n==='log')rl();
+if(n==='map')setTimeout(initMap,100);
 }
 
 function add(){
@@ -358,6 +370,123 @@ function saveEdit(){
   save(av);
   closeEdit();
   showToast('✓ Adventure updated!');
+  const GEOCODE={
+  'Belfast':[54.5973,-5.9301],
+  'Wales':[51.8,-3.5],
+  'Bradford-on-Avon':[51.3462,-2.2513],
+  'Cardiff':[51.4816,-3.1791],
+  'London':[51.5074,-0.1278],
+  'Henley-on-Thames':[51.5354,-0.9008],
+  'Chipping Sodbury':[51.5367,-2.3939],
+  'Lincolnshire':[53.1,-0.3],
+  'Oxford':[51.7520,-1.2577],
+  'Frampton Cotterell':[51.5167,-2.4833],
+  'Badminton':[51.5333,-2.1333],
+  'Tenerife':[28.2916,-16.6291],
+  'Calgary':[51.0447,-114.0719],
+  'Banff':[51.1784,-115.5708],
+  'Calgary, Banff':[51.1,-114.5],
+  'West Sussex':[50.9,-0.5],
+  'Yate':[51.5411,-2.4184],
+  'Exmouth':[50.6186,-3.4130],
+  'Wales (Wye Valley)':[51.8,-2.7],
+  'Bristol':[51.4545,-2.5879],
+  'Silverstone':[52.0786,-1.0169],
+  'Wiltshire':[51.3,-1.9],
+  'Dublin':[53.3498,-6.2603],
+  'Lake District, Scotland, Peak District':[54.5,-3.0],
+  'Peak District':[53.3,-1.8],
+};
+
+let mapInstance=null;
+
+function getCoords(a){
+  if(GEOCODE[a.region])return GEOCODE[a.region];
+  if(GEOCODE[a.country])return GEOCODE[a.country];
+  return null;
+}
+
+function initMap(){
+  if(mapInstance){mapInstance.invalidateSize();return;}
+  mapInstance=L.map('mapid').setView([51.5,-2.5],5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© OpenStreetMap',maxZoom:18
+  }).addTo(mapInstance);
+
+  // group adventures by location
+  const locMap={};
+  av.forEach((a,i)=>{
+    const coords=getCoords(a);
+    if(!coords)return;
+    const key=coords.join(',');
+    if(!locMap[key])locMap[key]={coords,adventures:[]};
+    locMap[key].adventures.push({...a,_i:i});
+  });
+
+  Object.values(locMap).forEach(loc=>{
+    const {coords,adventures}=loc;
+    // if multiple adventures, use a cluster style marker
+    const count=adventures.length;
+    const color=count>1?'#f5a623':(TC[adventures[0].type]||'#e94560');
+    const marker=L.circleMarker(coords,{
+      radius:count>1?14:10,
+      fillColor:color,
+      color:'#fff',
+      weight:2,
+      opacity:1,
+      fillOpacity:0.9
+    }).addTo(mapInstance);
+
+    if(count>1){
+      marker.bindTooltip(`${count}`,{permanent:true,direction:'center',className:'cluster-label'});
+    }
+
+    marker.on('click',()=>showMapCard(adventures));
+  });
+}
+
+function showMapCard(adventures){
+  const el=document.getElementById('mapCardContent');
+  if(adventures.length===1){
+    const a=adventures[0];
+    const c=TC[a.type]||'#e94560';
+    el.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px">
+        <div class="card-name">${IC[a.type]||'🌟'} ${a.name}</div>
+        <span class="tbadge" style="background:${c}">${a.type}</span>
+      </div>
+      <div class="meta">
+        <span class="mi">📅 ${fd2(a.date)}</span>
+        <span class="mi">📍 ${[a.region,a.country].filter(Boolean).join(', ')}</span>
+        ${a.who?`<span class="mi who">👥 ${a.who}</span>`:''}
+      </div>
+      <div class="card-actions">
+        ${a.photos?`<a class="photos-btn" href="${a.photos}" target="_blank">📷 Photos</a>`:''}
+      </div>`;
+  } else {
+    el.innerHTML=`
+      <div style="font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:12px">${adventures.length} adventures here</div>
+      ${adventures.map(a=>{
+        const c=TC[a.type]||'#e94560';
+        return`<div style="border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
+            <div style="font-size:14px;font-weight:700">${IC[a.type]||'🌟'} ${a.name}</div>
+            <span class="tbadge" style="background:${c}">${a.type}</span>
+          </div>
+          <div class="meta">
+            <span class="mi">📅 ${fd2(a.date)}</span>
+            ${a.who?`<span class="mi who">👥 ${a.who}</span>`:''}
+          </div>
+          ${a.photos?`<div style="margin-top:6px"><a class="photos-btn" href="${a.photos}" target="_blank">📷 Photos</a></div>`:''}
+        </div>`;
+      }).join('')}`;
+  }
+  document.getElementById('mapCard').classList.add('show');
+}
+
+function closeMapCard(){
+  document.getElementById('mapCard').classList.remove('show');
+}
   rl(document.querySelector('.search').value);
 }
   function toggleSS(id){
@@ -367,6 +496,13 @@ function saveEdit(){
   chev.classList.toggle('open');
 }
 </script>
+  <div class="view" id="view-map">
+  <div id="mapid"></div>
+</div>
+<div class="map-card-overlay" id="mapCard">
+  <button class="map-close" onclick="closeMapCard()">✕</button>
+  <div id="mapCardContent"></div>
+</div>
   <div class="modal-overlay" id="editModal">
   <div class="modal">
     <h2>Edit Adventure</h2>

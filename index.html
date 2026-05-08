@@ -70,6 +70,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .modal h2{font-size:18px;font-weight:700;color:var(--accent);margin-bottom:18px}
 .modal-actions{display:flex;gap:10px;margin-top:6px}
 .btn-cancel{flex:1;background:var(--border);color:var(--text);border:none;border-radius:var(--radius);padding:15px;font-size:16px;font-weight:700;cursor:pointer}
+.ss-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:4px 0}
+.ss-header h2{margin-bottom:0}
+.ss-chevron{color:var(--muted);font-size:14px;transition:transform 0.2s}
+.ss-chevron.open{transform:rotate(180deg)}
+.ss-body{display:none}
+.ss-body.open{display:block}
 </style>
 </head>
 <body>
@@ -125,9 +131,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="sc"><div class="num" id="sc2">0</div><div class="lbl">Countries</div></div>
     <div class="sc"><div class="num" id="sp">0</div><div class="lbl">Buddies</div></div>
   </div>
-  <div class="ss"><h2>By Month</h2><div id="sm"></div></div>
-  <div class="ss"><h2>By Type</h2><div id="sty"></div></div>
-  <div class="ss"><h2>Adventure Buddies</h2><div id="sb"></div></div>
+  <div class="ss"><div class="ss-header" onclick="toggleSS('sm')"><h2>By Month</h2><span class="ss-chevron" id="chev-sm">▼</span></div><div class="ss-body" id="sm"></div></div>
+<div class="ss"><div class="ss-header" onclick="toggleSS('sty')"><h2>By Type</h2><span class="ss-chevron" id="chev-sty">▼</span></div><div class="ss-body" id="sty"></div></div>
+<div class="ss"><div class="ss-header" onclick="toggleSS('sb')"><h2>Adventure Buddies</h2><span class="ss-chevron" id="chev-sb">▼</span></div><div class="ss-body" id="sb"></div></div>
 </div>
 
 <div class="toast" id="toast">✓ Saved!</div>
@@ -353,6 +359,12 @@ function saveEdit(){
   closeEdit();
   showToast('✓ Adventure updated!');
   rl(document.querySelector('.search').value);
+}
+  function toggleSS(id){
+  const body=document.getElementById(id);
+  const chev=document.getElementById('chev-'+id);
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
 }
 </script>
   <div class="modal-overlay" id="editModal">

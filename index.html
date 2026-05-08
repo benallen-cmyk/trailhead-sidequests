@@ -176,11 +176,18 @@ const SEED=[
   {date:'2026-01-25',name:'Longleat 10km',type:'Run',country:'UK',region:'Wiltshire',who:'Helen, Theo, Jackson, Nick, Jo, Holly, Dylan',photos:''}
 ];
 
-const K='ben_adv_v2';
-function load(){try{const s=localStorage.getItem(K);if(s)return JSON.parse(s);}catch(e){}return[...SEED];}
+const K='ben_adv_v3';
+let av=[...SEED];
+try{
+  const s=localStorage.getItem(K);
+  if(s){
+    const parsed=JSON.parse(s);
+    if(parsed && parsed.length>0) av=parsed;
+  } else {
+    localStorage.setItem(K,JSON.stringify(av));
+  }
+}catch(e){}
 function save(d){try{localStorage.setItem(K,JSON.stringify(d));}catch(e){}}
-let av=load();
-
 function fd2(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
 function gy(d){return d?new Date(d+'T00:00:00').getFullYear():0;}
 function gm(d){return d?new Date(d+'T00:00:00').getMonth():-1;}

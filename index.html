@@ -31,12 +31,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .meta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
 .mi{font-size:12px;color:var(--muted)}
 .mi.who{color:var(--green)}
-.card-actions{display:flex;gap:8px;align-items:center}
+.card-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .photos-btn{display:inline-flex;align-items:center;gap:5px;background:#1a3a2a;color:var(--green);border:1px solid var(--green);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none}
 .photos-btn:active{opacity:.7}
 .add-photos-btn{display:inline-flex;align-items:center;gap:5px;background:transparent;color:var(--muted);border:1px dashed var(--border);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer}
-.add-photos-btn:active{opacity:.7}
-.photos-input-row{display:flex;gap:8px;margin-top:8px}
+.photos-input-row{display:flex;gap:8px;margin-top:8px;width:100%}
 .photos-input-row input{flex:1;background:var(--bg);border:1px solid var(--accent);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;outline:none}
 .photos-input-row button{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer}
 .form-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
@@ -176,18 +175,15 @@ const SEED=[
   {date:'2026-01-25',name:'Longleat 10km',type:'Run',country:'UK',region:'Wiltshire',who:'Helen, Theo, Jackson, Nick, Jo, Holly, Dylan',photos:''}
 ];
 
-const K='ben_adv_v3';
 let av=[...SEED];
 try{
-  const s=localStorage.getItem(K);
-  if(s){
-    const parsed=JSON.parse(s);
-    if(parsed && parsed.length>0) av=parsed;
-  } else {
-    localStorage.setItem(K,JSON.stringify(av));
-  }
+  const s=localStorage.getItem('ben_adv_v3');
+  if(s){const p=JSON.parse(s);if(p&&p.length>0)av=p;}
+  else{localStorage.setItem('ben_adv_v3',JSON.stringify(av));}
 }catch(e){}
-function save(d){try{localStorage.setItem(K,JSON.stringify(d));}catch(e){}}
+
+function save(d){try{localStorage.setItem('ben_adv_v3',JSON.stringify(d));}catch(e){}}
+
 function fd2(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
 function gy(d){return d?new Date(d+'T00:00:00').getFullYear():0;}
 function gm(d){return d?new Date(d+'T00:00:00').getMonth():-1;}
@@ -206,7 +202,7 @@ function savePhoto(idx){
   rl(document.querySelector('.search').value);
 }
 
-function showToast(msg='✓ Saved!'){
+function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;
   t.classList.add('show');
@@ -274,4 +270,41 @@ function rs(){
 }
 
 function sv(n,btn){
-  document.querySelectorAll('.vi
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+n).classList.add('active');
+  btn.classList.add('active');
+  if(n==='stats')rs();
+  if(n==='log')rl();
+}
+
+function add(){
+  const date=document.getElementById('fd').value;
+  const name=document.getElementById('fn').value.trim();
+  if(!date||!name){alert('Date and name are required.');return;}
+  av.push({date,name,
+    type:document.getElementById('ft').value,
+    country:document.getElementById('fc').value.trim(),
+    region:document.getElementById('fr').value.trim(),
+    who:document.getElementById('fw').value.trim(),
+    photos:document.getElementById('fp').value.trim()
+  });
+  save(av);
+  ['fd','fn','fc','fr','fw','fp'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ft').value='';
+  document.getElementById('fd').value=new Date().toISOString().split('T')[0];
+  showToast('✓ Adventure saved!');
+  setTimeout(()=>{
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('view-log').classList.add('active');
+    document.querySelectorAll('.nav-btn')[0].classList.add('active');
+    rl();
+  },800);
+}
+
+document.getElementById('fd').value=new Date().toISOString().split('T')[0];
+rl();
+</script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<meta name="theme-color" content="#1a1a2e" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>Ben's Adventures</title>
+<style>
+:root{--bg:#0f0f1a;--card:#1a1a2e;--accent:#e94560;--accent2:#f5a623;--text:#fff;--muted:#8888aa;--border:#2a2a4a;--green:#4ecca3;--radius:14px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:20px 20px 0;position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border)}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.header h1{font-size:22px;font-weight:700}
+.header h1 span{color:var(--accent)}
+.badge{background:var(--accent);color:#fff;font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px}
+.nav{display:flex}
+.nav-btn{flex:1;padding:10px 4px;background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.nav-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.view{display:none;padding:16px;padding-bottom:80px}
+.view.active{display:block}
+.search{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;color:var(--text);font-size:15px;width:100%;margin-bottom:14px;outline:none}
+.search::placeholder{color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--tc,var(--accent));border-radius:4px 0 0 4px}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.card-name{font-size:15px;font-weight:700;line-height:1.3;flex:1}
+.tbadge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--tc,var(--accent));color:#fff;white-space:nowrap;text-transform:uppercase;letter-spacing:.5px}
+.meta{display:flex;flex-wrap:wrap;gap:10px}
+.mi{font-size:12px;color:var(--muted)}
+.mi.who{color:var(--green)}
+.form-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.form-box h2{font-size:18px;font-weight:700;margin-bottom:18px;color:var(--accent)}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.fg input,.fg select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:15px;outline:none;-webkit-appearance:none}
+.fg input:focus,.fg select:focus{border-color:var(--accent)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:15px;font-size:16px;font-weight:700;cursor:pointer;margin-top:6px}
+.btn:active{opacity:.8}
+.ss{margin-bottom:24px}
+.ss h2{font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+.sc .num{font-size:32px;font-weight:800;color:var(--accent);line-height:1}
+.sc .lbl{font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.br{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.bl{font-size:12px;color:var(--text);width:90px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bt{flex:1;background:var(--border);border-radius:4px;height:8px;overflow:hidden}
+.bf{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.bc{font-size:12px;font-weight:700;color:var(--accent2);width:24px;text-align:right;flex-shrink:0}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--green);color:#0f0f1a;font-weight:700;font-size:14px;padding:10px 20px;border-radius:30px;opacity:0;transition:all .3s;z-index:300;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px}
+.empty .icon{font-size:40px;margin-bottom:10px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <h1>Ben's <span>Adventures</span></h1>
+    <span class="badge" id="badge">0</span>
+  </div>
+  <nav class="nav">
+    <button class="nav-btn active" onclick="sv('log',this)">📋 Log</button>
+    <button class="nav-btn" onclick="sv('add',this)">➕ Add</button>
+    <button class="nav-btn" onclick="sv('stats',this)">📊 Stats</button>
+  </nav>
+</div>
+
+<div class="view active" id="view-log">
+  <input class="search" type="text" placeholder="🔍 Search..." oninput="rl(this.value)"/>
+  <div id="ll"></div>
+</div>
+
+<div class="view" id="view-add">
+  <div class="form-box">
+    <h2>New Adventure</h2>
+    <div class="fg"><label>Date</label><input type="date" id="fd"/></div>
+    <div class="fg"><label>Adventure Name</label><input type="text" id="fn" placeholder="e.g. Pen Y Fan Sunrise"/></div>
+    <div class="fg">
+      <label>Type</label>
+      <select id="ft">
+        <option value="">Select type...</option>
+        <option>Hike</option><option>Run</option><option>OCR</option><option>Marathon</option>
+        <option>Trail Run</option><option>Road Trip</option><option>Holiday</option>
+        <option>Climb</option><option>Swim</option><option>Beach/Water</option>
+        <option>Gym/Training</option><option>Kayak/SUP</option><option>City Break</option>
+        <option>Gig</option><option>Photo Mission</option><option>Festival/Event</option>
+        <option>Family Trip</option><option>Other</option>
+      </select>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>Country</label><input type="text" id="fc" placeholder="e.g. UK"/></div>
+      <div class="fg"><label>Region</label><input type="text" id="fr" placeholder="e.g. Wales"/></div>
+    </div>
+    <div class="fg"><label>Who With</label><input type="text" id="fw" placeholder="e.g. Helen, Theo"/></div>
+    <button class="btn" onclick="add()">Save Adventure</button>
+  </div>
+</div>
+
+<div class="view" id="view-stats">
+  <div class="sg">
+    <div class="sc"><div class="num" id="st">0</div><div class="lbl">All Time</div></div>
+    <div class="sc"><div class="num" id="sy">0</div><div class="lbl">This Year</div></div>
+    <div class="sc"><div class="num" id="sc2">0</div><div class="lbl">Countries</div></div>
+    <div class="sc"><div class="num" id="sp">0</div><div class="lbl">Buddies</div></div>
+  </div>
+  <div class="ss"><h2>By Month (2025)</h2><div id="sm"></div></div>
+  <div class="ss"><h2>By Type</h2><div id="sty"></div></div>
+  <div class="ss"><h2>Adventure Buddies</h2><div id="sb"></div></div>
+</div>
+
+<div class="toast" id="toast">✓ Saved!</div>
+
+<script>
+const TC={Hike:'#4ecca3',Run:'#45b7d1',OCR:'#e94560',Marathon:'#f5a623','Trail Run':'#96ceb4','Road Trip':'#dda0dd',Holiday:'#87ceeb',Climb:'#ff6b6b',Swim:'#4fc3f7','Beach/Water':'#00bcd4','Gym/Training':'#ab47bc','Kayak/SUP':'#26c6da','City Break':'#ffd54f',Gig:'#ff4081','Photo Mission':'#69f0ae','Festival/Event':'#ff6e40','Family Trip':'#a5d6a7',Other:'#78909c'};
+const IC={Hike:'🥾',Run:'🏃',OCR:'💪',Marathon:'🏅','Trail Run':'🌲','Road Trip':'🚗',Holiday:'✈️',Climb:'🧗',Swim:'🏊','Beach/Water':'🏄','Gym/Training':'🏋️','Kayak/SUP':'🛶','City Break':'🏙️',Gig:'🎸','Photo Mission':'📸','Festival/Event':'🎉','Family Trip':'👨‍👩‍👧‍👦',Other:'🌟'};
+const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const SEED=[
+  {date:'2025-03-13',name:'Game of Thrones Studio Tour',type:'Other',country:'UK',region:'Belfast',who:'Helen'},
+  {date:'2025-03-14',name:'Country 2 Country',type:'Gig',country:'UK',region:'Belfast',who:'Helen'},
+  {date:'2025-03-23',name:'Pen Y Fan',type:'Hike',country:'UK',region:'Wales',who:'Helen, Gruff, Kim'},
+  {date:'2025-03-29',name:'DEKA Strong',type:'Gym/Training',country:'UK',region:'Bradford-on-Avon',who:'Jackson'},
+  {date:'2025-04-08',name:'Sugarloaf',type:'Hike',country:'UK',region:'Wales',who:'Theo, Jackson'},
+  {date:'2025-04-21',name:'Infinity Trampoline Park',type:'Other',country:'UK',region:'Cardiff',who:'Helen, Theo, Jackson'},
+  {date:'2025-04-27',name:'London Marathon',type:'Marathon',country:'UK',region:'London',who:''},
+  {date:'2025-05-10',name:"Tough Mudder - Europe's Toughest Infinity",type:'OCR',country:'UK',region:'Henley-on-Thames',who:'Sam, Kim'},
+  {date:'2025-05-17',name:'Good Times 2025',type:'Photo Mission',country:'UK',region:'Chipping Sodbury',who:'Helen, Tom'},
+  {date:'2025-05-18',name:'Spartan London West',type:'OCR',country:'UK',region:'Henley-on-Thames',who:''},
+  {date:'2025-06-01',name:'Go Ruck Wales - First Podium!',type:'Trail Run',country:'UK',region:'Wales',who:''},
+  {date:'2025-06-05',name:'Lake District/Scotland/Peak District Road Trip',type:'Road Trip',country:'UK',region:'Lake District, Scotland, Peak District',who:'Helen, Theo, Jackson'},
+  {date:'2025-06-22',name:'Zach Bryan - 1st solo gig',type:'Gig',country:'UK',region:'Dublin',who:''},
+  {date:'2025-06-27',name:"World's Toughest Mudder - 45 Miles",type:'OCR',country:'UK',region:'Lincolnshire',who:'Helen, Theo, Sam, Kerry'},
+  {date:'2025-07-05',name:'Tough Mudder Infinity',type:'OCR',country:'UK',region:'Lincolnshire',who:'Sam'},
+  {date:'2025-07-13',name:'Rhossili Bay',type:'Beach/Water',country:'UK',region:'Wales',who:'Helen, Theo, Jackson'},
+  {date:'2025-08-03',name:"Theo's Track Day",type:'Other',country:'UK',region:'Oxford',who:'Helen, Theo, Jackson'},
+  {date:'2025-08-12',name:'River Walk',type:'Hike',country:'UK',region:'Frampton Cotterell',who:'Theo, Jackson'},
+  {date:'2025-08-16',name:'Tough Mudder South West',type:'OCR',country:'UK',region:'Badminton',who:'Helen'},
+  {date:'2025-08-17',name:'Spartan South West',type:'OCR',country:'UK',region:'Badminton',who:'Helen, Holly, Theo, Jackson'},
+  {date:'2025-08-18',name:'Tenerife',type:'Holiday',country:'Spain',region:'Tenerife',who:'Helen, Theo, Jackson'},
+  {date:'2025-08-23',name:'Sea Kayaking',type:'Beach/Water',country:'Spain',region:'Tenerife',who:'Theo'},
+  {date:'2025-08-24',name:'Surfing',type:'Beach/Water',country:'Spain',region:'Tenerife',who:'Jackson'},
+  {date:'2025-08-27',name:'Sunset & Stargazing - Mount Teide',type:'Photo Mission',country:'Spain',region:'Tenerife',who:'Helen, Theo, Jackson'},
+  {date:'2025-09-04',name:'Canada Trip',type:'Holiday',country:'Canada',region:'Calgary, Banff',who:''},
+  {date:'2025-09-05',name:'Exploring Calgary',type:'City Break',country:'Canada',region:'Calgary',who:''},
+  {date:'2025-09-05',name:'Cirque du Soleil',type:'Festival/Event',country:'Canada',region:'Calgary',who:''},
+  {date:'2025-09-07',name:'Lake Louise',type:'Hike',country:'Canada',region:'Banff',who:''},
+  {date:'2025-09-08',name:'Climbed Mount Norquay',type:'Climb',country:'Canada',region:'Banff',who:''},
+  {date:'2025-09-09',name:'Cycled to Johnston Canyon',type:'Other',country:'Canada',region:'Banff',who:''},
+  {date:'2025-09-10',name:'Sunrise at Moraine Lake',type:'Hike',country:'Canada',region:'Banff',who:''},
+  {date:'2025-09-10',name:'Horseback Ride on the Bow River',type:'Other',country:'Canada',region:'Banff',who:''},
+  {date:'2025-09-11',name:'Hiked Tunnel Mountain',type:'Hike',country:'Canada',region:'Banff',who:''},
+  {date:'2025-09-12',name:'Rafting on Kananaskis River',type:'Beach/Water',country:'Canada',region:'Banff',who:''},
+  {date:'2025-09-20',name:'Tough Mudder London South',type:'OCR',country:'UK',region:'West Sussex',who:'Helen, Sam'},
+  {date:'2025-09-27',name:"Jackson's First Riding Lesson",type:'Other',country:'UK',region:'Yate',who:'Jackson'},
+  {date:'2025-09-28',name:'Exmouth 5K',type:'Run',country:'UK',region:'Exmouth',who:'Kenco'},
+  {date:'2025-10-04',name:'Spartan London South East',type:'OCR',country:'UK',region:'West Sussex',who:'Helen, Theo, Jackson, Sam, Holly, Jo, Nick, Dylan'},
+  {date:'2025-10-27',name:'Wye Valley Hike',type:'Hike',country:'UK',region:'Wales',who:'Holly'},
+  {date:'2025-11-09',name:'Movember 10km',type:'Run',country:'UK',region:'Bristol',who:'Nick, Holly'},
+  {date:'2025-11-23',name:'Silverstone Half Marathon',type:'Run',country:'UK',region:'Silverstone',who:'Kenco'},
+  {date:'2025-11-30',name:'Mojo Active 5km',type:'OCR',country:'UK',region:'Bristol',who:'Helen, Theo, Jackson, Jo, Holly, Dylan'},
+  {date:'2026-01-25',name:'Longleat 10km',type:'Run',country:'UK',region:'Wiltshire',who:'Helen, Theo, Jackson, Nick, Jo, Holly, Dylan'}
+];
+
+const K='ben_adv_v1';
+function load(){try{const s=localStorage.getItem(K);if(s)return JSON.parse(s);}catch(e){}return[...SEED];}
+function save(d){try{localStorage.setItem(K,JSON.stringify(d));}catch(e){}}
+let av=load();
+
+function fd2(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+function gy(d){return d?new Date(d+'T00:00:00').getFullYear():0;}
+function gm(d){return d?new Date(d+'T00:00:00').getMonth():-1;}
+
+function rl(q=''){
+  q=q.toLowerCase();
+  const s=[...av].sort((a,b)=>b.date.localeCompare(a.date));
+  const f=q?s.filter(a=>[a.name,a.type,a.country,a.region,a.who].join(' ').toLowerCase().includes(q)):s;
+  document.getElementById('badge').textContent=av.length;
+  const el=document.getElementById('ll');
+  if(!f.length){el.innerHTML='<div class="empty"><div class="icon">🔍</div>No adventures found</div>';return;}
+  el.innerHTML=f.map(a=>{
+    const c=TC[a.type]||'#e94560';
+    return`<div class="card" style="--tc:${c}">
+      <div class="card-top">
+        <div class="card-name">${IC[a.type]||'🌟'} ${a.name}</div>
+        <span class="tbadge">${a.type}</span>
+      </div>
+      <div class="meta">
+        <span class="mi">📅 ${fd2(a.date)}</span>
+        <span class="mi">📍 ${[a.region,a.country].filter(Boolean).join(', ')}</span>
+        ${a.who?`<span class="mi who">👥 ${a.who}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function rs(){
+  const yr=new Date().getFullYear();
+  const ty=av.filter(a=>gy(a.date)===yr);
+  const ctr=new Set(av.map(a=>a.country).filter(Boolean));
+  const bc={};
+  av.forEach(a=>{if(!a.who)return;a.who.split(',').forEach(p=>{const n=p.trim();if(n)bc[n]=(bc[n]||0)+1;});});
+  document.getElementById('st').textContent=av.length;
+  document.getElementById('sy').textContent=ty.length;
+  document.getElementById('sc2').textContent=ctr.size;
+  document.getElementById('sp').textContent=Object.keys(bc).length;
+  const y25=av.filter(a=>gy(a.date)===2025);
+  const mm=Math.max(...MN.map((_,i)=>y25.filter(a=>gm(a.date)===i).length),1);
+  document.getElementById('sm').innerHTML=MN.map((m,i)=>{
+    const c=y25.filter(a=>gm(a.date)===i).length;
+    return`<div class="br"><span class="bl">${m}</span><div class="bt"><div class="bf" style="width:${(c/mm)*100}%"></div></div><span class="bc">${c}</span></div>`;
+  }).join('');
+  const tc2={};av.forEach(a=>{if(a.type)tc2[a.type]=(tc2[a.type]||0)+1;});
+  const st2=Object.entries(tc2).sort((a,b)=>b[1]-a[1]);
+  const mt=st2[0]?.[1]||1;
+  document.getElementById('sty').innerHTML=st2.map(([t,c])=>
+    `<div class="br"><span class="bl">${IC[t]||'🌟'} ${t}</span><div class="bt"><div class="bf" style="width:${(c/mt)*100}%;background:${TC[t]||'#e94560'}"></div></div><span class="bc">${c}</span></div>`
+  ).join('');
+  const sb2=Object.entries(bc).sort((a,b)=>b[1]-a[1]);
+  const mb=sb2[0]?.[1]||1;
+  document.getElementById('sb').innerHTML=sb2.map(([n,c])=>
+    `<div class="br"><span class="bl">👤 ${n}</span><div class="bt"><div class="bf" style="width:${(c/mb)*100}%"></div></div><span class="bc">${c}</span></div>`
+  ).join('');
+}
+
+function sv(n,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+n).classList.add('active');
+  btn.classList.add('active');
+  if(n==='stats')rs();
+  if(n==='log')rl();
+}
+
+function add(){
+  const date=document.getElementById('fd').value;
+  const name=document.getElementById('fn').value.trim();
+  if(!date||!name){alert('Date and name are required.');return;}
+  av.push({date,name,
+    type:document.getElementById('ft').value,
+    country:document.getElementById('fc').value.trim(),
+    region:document.getElementById('fr').value.trim(),
+    who:document.getElementById('fw').value.trim()
+  });
+  save(av);
+  ['fd','fn','fc','fr','fw'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ft').value='';
+  document.getElementById('fd').value=new Date().toISOString().split('T')[0];
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+  setTimeout(()=>{
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('view-log').classList.add('active');
+    document.querySelectorAll('.nav-btn')[0].classList.add('active');
+    rl();
+  },800);
+}
+
+document.getElementById('fd').value=new Date().toISOString().split('T')[0];
+rl();
+</script>
+</body>
+</html>

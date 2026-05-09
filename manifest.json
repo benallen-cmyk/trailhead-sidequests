@@ -1,0 +1,20 @@
+{
+  "name": "Ben's Adventures",
+  "short_name": "Adventures",
+  "start_url": "/adventures/",
+  "display": "standalone",
+  "background_color": "#0f0f1a",
+  "theme_color": "#1a1a2e",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/e94560/ffffff?text=A",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/e94560/ffffff?text=A",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

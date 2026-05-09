@@ -724,7 +724,8 @@ function rs(){
 function buildYearlyReviews(){
   const reviewYears=[...new Set(av.map(a=>gy(a.date)).filter(y=>y>2000))].sort((a,b)=>b-a);
   const el=document.getElementById('yearlyReviews');
-  if(!el)return;
+  if(!el)
+    return;
   el.innerHTML=reviewYears.map(year=>{
     const yav=av.filter(a=>gy(a.date)===year);
     if(!yav.length)return'';
@@ -736,17 +737,20 @@ function buildYearlyReviews(){
     const topType=Object.entries(tc).sort((a,b)=>b[1]-a[1])[0];
     const countries=[...new Set(yav.map(a=>a.country).filter(Boolean))];
     const solo=yav.filter(a=>!a.who||a.who.trim()==='').length;
-    return`<div class="review-card">
-      <div class="review-year">${year} in Review</div>
-      <div class="review-title">${yav.length} Adventures ${countries.map(c=>countryFlag(c)).join(' ')}</div>
-      <div class="review-grid">
+   return`<div class="review-card" style="cursor:pointer" onclick="toggleReview(${year})">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div class="review-year">${year} in Review</div>
+        <span style="color:var(--muted);font-size:14px;transition:transform 0.2s" id="rev-chev-${year}">▼</span>
+      </div>
+      <div class="review-title" style="margin-bottom:0">${yav.length} Adventures ${countries.map(c=>countryFlag(c)).join(' ')}</div>
+      <div id="rev-body-${year}" style="display:none"><div style="height:16px"></div><div class="review-grid">
         <div class="review-stat"><div class="rlabel">Busiest Month</div><div class="rvalue">${topMonth.m} <span>(${topMonth.count})</span></div></div>
         ${topBuddy?`<div class="review-stat"><div class="rlabel">Top Buddy</div><div class="rvalue">${topBuddy[0]} <span>(${topBuddy[1]})</span></div></div>`:''}
         ${topType?`<div class="review-stat"><div class="rlabel">Favourite Type</div><div class="rvalue">${IC[topType[0]]||'🌟'} ${topType[0]}</div></div>`:''}
         <div class="review-stat"><div class="rlabel">Countries</div><div class="rvalue">${countries.join(', ')}</div></div>
         <div class="review-stat"><div class="rlabel">Solo</div><div class="rvalue"><span>${solo}</span> of ${yav.length}</div></div>
         <div class="review-stat"><div class="rlabel">With Others</div><div class="rvalue"><span>${yav.length-solo}</span> of ${yav.length}</div></div>
-      </div>
+     </div></div>
     </div>`;
   }).join('');
 }
@@ -863,6 +867,14 @@ function toggleSS(id){
 // INIT
 document.getElementById('fd').value=new Date().toISOString().split('T')[0];
 populateFilters();
+  function toggleReview(year){
+  const body=document.getElementById('rev-body-'+year);
+  const chev=document.getElementById('rev-chev-'+year);
+  if(!body)return;
+  const open=body.style.display==='none';
+  body.style.display=open?'block':'none';
+  chev.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+}
 setTimeout(startReplay,300);
 </script>
 </body>

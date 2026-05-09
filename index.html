@@ -375,8 +375,8 @@ function getCoords(a){
 function initMap(){
   if(mapInstance){mapInstance.invalidateSize();return;}
   mapInstance=L.map('mapid').setView([51.5,-2.5],5);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    attribution:'© OpenStreetMap',maxZoom:18
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+    attribution:'© OpenStreetMap © CARTO',maxZoom:18
   }).addTo(mapInstance);
   setTimeout(()=>mapInstance.invalidateSize(),200);
 

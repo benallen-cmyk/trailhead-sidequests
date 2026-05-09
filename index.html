@@ -88,6 +88,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .cluster-label{background:none!important;border:none!important;box-shadow:none!important;color:#fff!important;font-weight:700!important;font-size:11px!important}
 .card.upcoming{border-color:#f5a623;box-shadow:0 0 12px rgba(245,166,35,0.3)}
 .countdown-badge{display:inline-flex;align-items:center;background:rgba(245,166,35,0.15);color:var(--accent2);border:1px solid var(--accent2);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700}
+.upcoming-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:12px 16px;margin:-16px -16px 16px;background:rgba(245,166,35,0.05);border-bottom:1px solid rgba(245,166,35,0.3);box-shadow:0 0 16px rgba(245,166,35,0.15)}
+.upcoming-title{font-size:14px;font-weight:700;color:var(--accent2);text-shadow:0 0 10px rgba(245,166,35,0.5);letter-spacing:0.5px}
+.upcoming-chevron{color:var(--accent2);font-size:14px;transition:transform 0.2s}
+.upcoming-chevron.open{transform:rotate(180deg)}
+.upcoming-body{display:none}
+.upcoming-body.open{display:block}
+.filter-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.filter-btn.active{border-color:var(--accent);color:var(--accent)}
+.filter-panel{display:none;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+.filter-panel.open{display:block}
+.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.filter-select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:13px;outline:none;-webkit-appearance:none}
+.filter-select:focus{border-color:var(--accent)}
+.filter-clear{width:100%;background:transparent;border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;margin-top:4px}
+.filter-clear:active{opacity:.7}
 </style>
 </head>
 <body>
@@ -106,7 +121,47 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <div class="view active" id="view-log">
-  <input class="search" type="text" placeholder="🔍 Search..." oninput="rl(this.value)"/>
+  <div style="display:flex;gap:8px;margin-bottom:14px">
+    <input class="search" style="margin-bottom:0;flex:1" type="text" placeholder="🔍 Search..." oninput="rl(this.value)" id="searchInput"/>
+    <button class="filter-btn" style="width:auto;margin-bottom:0;padding:10px 14px" id="filterToggle" onclick="toggleFilter()">⚡ Filter</button>
+  </div>
+  <div class="filter-panel" id="filterPanel">
+    <div class="filter-row">
+      <select class="filter-select" id="fMonth" onchange="rl()">
+        <option value="">All Months</option>
+        <option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option>
+        <option>May</option><option>Jun</option><option>Jul</option><option>Aug</option>
+        <option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option>
+      </select>
+      <select class="filter-select" id="fYear" onchange="rl()">
+        <option value="">All Years</option>
+        <option>2025</option><option>2026</option><option>2027</option>
+      </select>
+    </div>
+    <div class="filter-row">
+      <select class="filter-select" id="fType" onchange="rl()">
+        <option value="">All Types</option>
+        <option>Hike</option><option>Run</option><option>OCR</option><option>Marathon</option>
+        <option>Trail Run</option><option>Road Trip</option><option>Holiday</option>
+        <option>Climb</option><option>Swim</option><option>Beach/Water</option>
+        <option>Gym/Training</option><option>Kayak/SUP</option><option>City Break</option>
+        <option>Gig</option><option>Photo Mission</option><option>Festival/Event</option>
+        <option>Family Trip</option><option>Other</option>
+      </select>
+      <select class="filter-select" id="fCountry" onchange="rl()">
+        <option value="">All Countries</option>
+        <option>UK</option><option>Spain</option><option>Canada</option>
+      </select>
+    </div>
+    <select class="filter-select" id="fBuddy" onchange="rl()" style="margin-bottom:10px">
+      <option value="">All Buddies</option>
+      <option>Helen</option><option>Theo</option><option>Jackson</option><option>Sam</option>
+      <option>Holly</option><option>Jo</option><option>Nick</option><option>Dylan</option>
+      <option>Kenco</option><option>Kim</option><option>Kerry</option><option>Gruff</option>
+      <option>Tom</option>
+    </select>
+    <button class="filter-clear" onclick="clearFilters()">✕ Clear Filters</button>
+  </div>
   <div id="ll"></div>
 </div>
 
@@ -236,15 +291,42 @@ function showToast(msg){
   setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-function rl(q=''){
+function rl(q){
+  if(q===undefined)q=document.getElementById('searchInput')?.value||'';
   q=q.toLowerCase();
-  const s=[...av].map((a,i)=>({...a,_i:i})).sort((a,b)=>b.date.localeCompare(a.date));
-  const f=q?s.filter(a=>[a.name,a.type,a.country,a.region,a.who].join(' ').toLowerCase().includes(q)):s;
+  const fMonth=document.getElementById('fMonth')?.value||'';
+  const fYear=document.getElementById('fYear')?.value||'';
+  const fType=document.getElementById('fType')?.value||'';
+  const fCountry=document.getElementById('fCountry')?.value||'';
+  const fBuddy=document.getElementById('fBuddy')?.value||'';
+
+  const today=new Date();today.setHours(0,0,0,0);
+
+  let filtered=[...av].map((a,i)=>({...a,_i:i})).filter(a=>{
+    if(q&&![a.name,a.type,a.country,a.region,a.who].join(' ').toLowerCase().includes(q))return false;
+    if(fMonth&&MN[gm(a.date)]!==fMonth)return false;
+    if(fYear&&String(gy(a.date))!==fYear)return false;
+    if(fType&&a.type!==fType)return false;
+    if(fCountry&&a.country!==fCountry)return false;
+    if(fBuddy&&!a.who.includes(fBuddy))return false;
+    return true;
+  });
+
+  filtered.sort((a,b)=>b.date.localeCompare(a.date));
+
   document.getElementById('badge').textContent=av.length;
   const el=document.getElementById('ll');
-  if(!f.length){el.innerHTML='<div class="empty"><div class="icon">🔍</div>No adventures found</div>';return;}
-  el.innerHTML=f.map(a=>{
+  if(!filtered.length){el.innerHTML='<div class="empty"><div class="icon">🔍</div>No adventures found</div>';return;}
+
+  const upcoming=filtered.filter(a=>new Date(a.date+'T00:00:00')>today);
+  const past=filtered.filter(a=>new Date(a.date+'T00:00:00')<=today);
+
+  function renderCard(a){
     const c=TC[a.type]||'#e94560';
+    const advDate=new Date(a.date+'T00:00:00');
+    const isUpcoming=advDate>today;
+    const daysUntil=Math.ceil((advDate-today)/(1000*60*60*24));
+    const countdownHtml=isUpcoming?`<span class="countdown-badge">⏳ ${daysUntil} day${daysUntil===1?'':'s'} away</span>`:'';
     const photosBtn=a.photos
       ?`<a class="photos-btn" href="${a.photos}" target="_blank">📷 Photos</a>`
       :`<button class="add-photos-btn" onclick="showPhotoInput(${a._i})">＋ Add Photos</button>
@@ -252,6 +334,35 @@ function rl(q=''){
          <input type="url" id="piv-${a._i}" placeholder="Paste Google Photos link..."/>
          <button onclick="savePhoto(${a._i})">Save</button>
        </div>`;
+    return`<div class="card${isUpcoming?' upcoming':''}" style="--tc:${c}">
+      <div class="card-top">
+        <div class="card-name">${IC[a.type]||'🌟'} ${a.name}</div>
+        <span class="tbadge">${a.type}</span>
+      </div>
+      <div class="meta">
+        <span class="mi">📅 ${fd2(a.date)}</span>
+        <span class="mi">📍 ${[a.region,a.country].filter(Boolean).join(', ')}</span>
+        ${a.who?`<span class="mi who">👥 ${a.who}</span>`:''}
+      </div>
+      <div class="card-actions">${countdownHtml}${photosBtn}<button class="edit-btn" onclick="openEdit(${a._i})">✏️ Edit</button></div>
+    </div>`;
+  }
+
+  let html='';
+  if(upcoming.length){
+    html+=`<div>
+      <div class="upcoming-header" onclick="toggleUpcoming()">
+        <span class="upcoming-title">⚡ Upcoming (${upcoming.length})</span>
+        <span class="upcoming-chevron" id="upcomingChevron">▼</span>
+      </div>
+      <div class="upcoming-body" id="upcomingBody">
+        ${upcoming.map(renderCard).join('')}
+      </div>
+    </div>`;
+  }
+  html+=past.map(renderCard).join('');
+  el.innerHTML=html;
+}
     const today=new Date();today.setHours(0,0,0,0);
 const advDate=new Date(a.date+'T00:00:00');
 const isUpcoming=advDate>today;
@@ -460,7 +571,27 @@ function closeMapCard(){
   document.getElementById('mapCard').classList.remove('show');
 }
 document.getElementById('fd').value=new Date().toISOString().split('T')[0];
-rl();
+function toggleUpcoming(){
+  const body=document.getElementById('upcomingBody');
+  const chev=document.getElementById('upcomingChevron');
+  if(body){body.classList.toggle('open');chev.classList.toggle('open');}
+}
+
+function toggleFilter(){
+  const panel=document.getElementById('filterPanel');
+  const btn=document.getElementById('filterToggle');
+  panel.classList.toggle('open');
+  btn.classList.toggle('active');
+}
+
+function clearFilters(){
+  ['fMonth','fYear','fType','fCountry','fBuddy'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.value='';
+  });
+  rl();
+}
+  rl();
   let editIdx=null;
 
 function openEdit(idx){

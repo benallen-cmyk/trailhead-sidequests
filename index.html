@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <title>Ben's Adventures</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root{--bg:#0f0f1a;--card:#1a1a2e;--accent:#e94560;--accent2:#f5a623;--text:#fff;--muted:#8888aa;--border:#2a2a4a;--green:#4ecca3;--radius:14px}
@@ -23,10 +23,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .nav-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
 .view{display:none;padding:16px;padding-bottom:80px}
 .view.active{display:block}
+#view-map{padding:0;padding-bottom:0}
+#mapid{height:calc(100vh - 110px);width:100%}
 .search{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;color:var(--text);font-size:15px;width:100%;margin-bottom:14px;outline:none}
 .search::placeholder{color:var(--muted)}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;position:relative;overflow:hidden}
 .card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--tc,var(--accent));border-radius:4px 0 0 4px}
+.card.upcoming{border-color:#f5a623;box-shadow:0 0 12px rgba(245,166,35,0.3)}
 .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
 .card-name{font-size:15px;font-weight:700;line-height:1.3;flex:1}
 .tbadge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--tc,var(--accent));color:#fff;white-space:nowrap;text-transform:uppercase;letter-spacing:.5px}
@@ -40,6 +43,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .photos-input-row{display:flex;gap:8px;margin-top:8px;width:100%}
 .photos-input-row input{flex:1;background:var(--bg);border:1px solid var(--accent);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;outline:none}
 .photos-input-row button{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer}
+.edit-btn{display:inline-flex;align-items:center;gap:5px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer}
+.edit-btn:active{opacity:.7}
+.countdown-badge{display:inline-flex;align-items:center;background:rgba(245,166,35,0.15);color:var(--accent2);border:1px solid var(--accent2);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700}
+.upcoming-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:12px 16px;margin:-16px -16px 16px;background:rgba(245,166,35,0.05);border-bottom:1px solid rgba(245,166,35,0.3);box-shadow:0 0 16px rgba(245,166,35,0.15)}
+.upcoming-title{font-size:14px;font-weight:700;color:var(--accent2);text-shadow:0 0 10px rgba(245,166,35,0.5);letter-spacing:0.5px}
+.upcoming-chevron{color:var(--accent2);font-size:14px;transition:transform 0.2s}
+.upcoming-chevron.open{transform:rotate(180deg)}
+.upcoming-body{display:none;padding-top:16px}
+.upcoming-body.open{display:block}
+.filter-bar{display:flex;gap:8px;margin-bottom:14px}
+.filter-toggle-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s}
+.filter-toggle-btn.active{border-color:var(--accent);color:var(--accent)}
+.filter-panel{display:none;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+.filter-panel.open{display:block}
+.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.filter-select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:13px;outline:none;-webkit-appearance:none}
+.filter-select:focus{border-color:var(--accent)}
+.filter-clear{width:100%;background:transparent;border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;margin-top:4px}
 .form-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
 .form-box h2{font-size:18px;font-weight:700;margin-bottom:18px;color:var(--accent)}
 .fg{margin-bottom:14px}
@@ -50,7 +71,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:15px;font-size:16px;font-weight:700;cursor:pointer;margin-top:6px}
 .btn:active{opacity:.8}
 .ss{margin-bottom:24px}
-.ss h2{font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.ss-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:4px 0}
+.ss-header h2{margin-bottom:0;font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.ss-chevron{color:var(--muted);font-size:14px;transition:transform 0.2s}
+.ss-chevron.open{transform:rotate(180deg)}
+.ss-body{display:none;padding-top:12px}
+.ss-body.open{display:block}
 .sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
 .sc{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
 .sc .num{font-size:32px;font-weight:800;color:var(--accent);line-height:1}
@@ -60,49 +86,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .bt{flex:1;background:var(--border);border-radius:4px;height:8px;overflow:hidden}
 .bf{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
 .bc{font-size:12px;font-weight:700;color:var(--accent2);width:24px;text-align:right;flex-shrink:0}
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--green);color:#0f0f1a;font-weight:700;font-size:14px;padding:10px 20px;border-radius:30px;opacity:0;transition:all .3s;z-index:300;white-space:nowrap}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px}
-.empty .icon{font-size:40px;margin-bottom:10px}
-  .edit-btn{display:inline-flex;align-items:center;gap:5px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer}
-.edit-btn:active{opacity:.7}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;align-items:flex-end}
 .modal-overlay.show{display:flex}
 .modal{background:var(--card);border-radius:var(--radius) var(--radius) 0 0;padding:20px;width:100%;max-height:90vh;overflow-y:auto}
 .modal h2{font-size:18px;font-weight:700;color:var(--accent);margin-bottom:18px}
 .modal-actions{display:flex;gap:10px;margin-top:6px}
 .btn-cancel{flex:1;background:var(--border);color:var(--text);border:none;border-radius:var(--radius);padding:15px;font-size:16px;font-weight:700;cursor:pointer}
-.ss-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:4px 0}
-.ss-header h2{margin-bottom:0}
-.ss-chevron{color:var(--muted);font-size:14px;transition:transform 0.2s}
-.ss-chevron.open{transform:rotate(180deg)}
-.ss-body{display:none}
-.ss-body.open{display:block}
-  #view-map{padding:0;padding-bottom:0}
-#mapid{height:calc(100vh - 110px);width:100%}
 .map-card-overlay{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-radius:var(--radius) var(--radius) 0 0;padding:20px;z-index:1000;border-top:1px solid var(--border);transform:translateY(100%);transition:transform 0.3s ease}
 .map-card-overlay.show{transform:translateY(0)}
-.map-card-overlay .card-name{font-size:16px;font-weight:700;margin-bottom:10px}
-.map-card-overlay .meta{margin-bottom:12px}
 .map-close{position:absolute;top:16px;right:16px;background:var(--border);border:none;color:var(--text);border-radius:50%;width:28px;height:28px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .cluster-label{background:none!important;border:none!important;box-shadow:none!important;color:#fff!important;font-weight:700!important;font-size:11px!important}
-.card.upcoming{border-color:#f5a623;box-shadow:0 0 12px rgba(245,166,35,0.3)}
-.countdown-badge{display:inline-flex;align-items:center;background:rgba(245,166,35,0.15);color:var(--accent2);border:1px solid var(--accent2);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700}
-.upcoming-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:12px 16px;margin:-16px -16px 16px;background:rgba(245,166,35,0.05);border-bottom:1px solid rgba(245,166,35,0.3);box-shadow:0 0 16px rgba(245,166,35,0.15)}
-.upcoming-title{font-size:14px;font-weight:700;color:var(--accent2);text-shadow:0 0 10px rgba(245,166,35,0.5);letter-spacing:0.5px}
-.upcoming-chevron{color:var(--accent2);font-size:14px;transition:transform 0.2s}
-.upcoming-chevron.open{transform:rotate(180deg)}
-.upcoming-body{display:none}
-.upcoming-body.open{display:block}
-.filter-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.filter-btn.active{border-color:var(--accent);color:var(--accent)}
-.filter-panel{display:none;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px}
-.filter-panel.open{display:block}
-.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.filter-select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:13px;outline:none;-webkit-appearance:none}
-.filter-select:focus{border-color:var(--accent)}
-.filter-clear{width:100%;background:transparent;border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;margin-top:4px}
-.filter-clear:active{opacity:.7}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--green);color:#0f0f1a;font-weight:700;font-size:14px;padding:10px 20px;border-radius:30px;opacity:0;transition:all .3s;z-index:300;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px}
+.empty .icon{font-size:40px;margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -116,14 +113,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <button class="nav-btn active" onclick="sv('log',this)">📋 Log</button>
     <button class="nav-btn" onclick="sv('add',this)">➕ Add</button>
     <button class="nav-btn" onclick="sv('stats',this)">📊 Stats</button>
-<button class="nav-btn" onclick="sv('map',this)">🗺️ Map</button>
+    <button class="nav-btn" onclick="sv('map',this)">🗺️ Map</button>
   </nav>
 </div>
 
 <div class="view active" id="view-log">
-  <div style="display:flex;gap:8px;margin-bottom:14px">
+  <div class="filter-bar">
     <input class="search" style="margin-bottom:0;flex:1" type="text" placeholder="🔍 Search..." oninput="rl(this.value)" id="searchInput"/>
-    <button class="filter-btn" style="width:auto;margin-bottom:0;padding:10px 14px" id="filterToggle" onclick="toggleFilter()">⚡ Filter</button>
+    <button class="filter-toggle-btn" id="filterToggle" onclick="toggleFilter()">⚡ Filter</button>
   </div>
   <div class="filter-panel" id="filterPanel">
     <div class="filter-row">
@@ -200,8 +197,47 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="sc"><div class="num" id="sp">0</div><div class="lbl">Buddies</div></div>
   </div>
   <div class="ss"><div class="ss-header" onclick="toggleSS('sm')"><h2>By Month</h2><span class="ss-chevron" id="chev-sm">▼</span></div><div class="ss-body" id="sm"></div></div>
-<div class="ss"><div class="ss-header" onclick="toggleSS('sty')"><h2>By Type</h2><span class="ss-chevron" id="chev-sty">▼</span></div><div class="ss-body" id="sty"></div></div>
-<div class="ss"><div class="ss-header" onclick="toggleSS('sb')"><h2>Adventure Buddies</h2><span class="ss-chevron" id="chev-sb">▼</span></div><div class="ss-body" id="sb"></div></div>
+  <div class="ss"><div class="ss-header" onclick="toggleSS('sty')"><h2>By Type</h2><span class="ss-chevron" id="chev-sty">▼</span></div><div class="ss-body" id="sty"></div></div>
+  <div class="ss"><div class="ss-header" onclick="toggleSS('sb')"><h2>Adventure Buddies</h2><span class="ss-chevron" id="chev-sb">▼</span></div><div class="ss-body" id="sb"></div></div>
+</div>
+
+<div class="view" id="view-map">
+  <div id="mapid"></div>
+</div>
+
+<div class="map-card-overlay" id="mapCard">
+  <button class="map-close" onclick="closeMapCard()">✕</button>
+  <div id="mapCardContent"></div>
+</div>
+
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h2>Edit Adventure</h2>
+    <div class="fg"><label>Date</label><input type="date" id="ed"/></div>
+    <div class="fg"><label>Adventure Name</label><input type="text" id="en" placeholder="e.g. Pen Y Fan Sunrise"/></div>
+    <div class="fg">
+      <label>Type</label>
+      <select id="et">
+        <option value="">Select type...</option>
+        <option>Hike</option><option>Run</option><option>OCR</option><option>Marathon</option>
+        <option>Trail Run</option><option>Road Trip</option><option>Holiday</option>
+        <option>Climb</option><option>Swim</option><option>Beach/Water</option>
+        <option>Gym/Training</option><option>Kayak/SUP</option><option>City Break</option>
+        <option>Gig</option><option>Photo Mission</option><option>Festival/Event</option>
+        <option>Family Trip</option><option>Other</option>
+      </select>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>Country</label><input type="text" id="ec" placeholder="e.g. UK"/></div>
+      <div class="fg"><label>Region</label><input type="text" id="er" placeholder="e.g. Wales"/></div>
+    </div>
+    <div class="fg"><label>Who With</label><input type="text" id="ew" placeholder="e.g. Helen, Theo"/></div>
+    <div class="fg"><label>Google Photos Link</label><input type="url" id="ep" placeholder="https://photos.app.goo.gl/..."/></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeEdit()">Cancel</button>
+      <button class="btn" style="flex:1" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast">✓ Saved!</div>
@@ -265,10 +301,16 @@ try{
 }catch(e){}
 
 function save(d){try{localStorage.setItem('ben_adv_v3',JSON.stringify(d));}catch(e){}}
-
 function fd2(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
 function gy(d){return d?new Date(d+'T00:00:00').getFullYear():0;}
 function gm(d){return d?new Date(d+'T00:00:00').getMonth():-1;}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
 
 function showPhotoInput(idx){
   const el=document.getElementById('pi-'+idx);
@@ -281,14 +323,35 @@ function savePhoto(idx){
   av[idx].photos=val;
   save(av);
   showToast('📷 Photos link saved!');
-  rl(document.querySelector('.search').value);
+  rl();
 }
 
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2500);
+function renderCard(a){
+  const c=TC[a.type]||'#e94560';
+  const today=new Date();today.setHours(0,0,0,0);
+  const advDate=new Date(a.date+'T00:00:00');
+  const isUpcoming=advDate>today;
+  const daysUntil=Math.ceil((advDate-today)/(1000*60*60*24));
+  const countdownHtml=isUpcoming?`<span class="countdown-badge">⏳ ${daysUntil} day${daysUntil===1?'':'s'} away</span>`:'';
+  const photosBtn=a.photos
+    ?`<a class="photos-btn" href="${a.photos}" target="_blank">📷 Photos</a>`
+    :`<button class="add-photos-btn" onclick="showPhotoInput(${a._i})">＋ Add Photos</button>
+     <div class="photos-input-row" id="pi-${a._i}" style="display:none">
+       <input type="url" id="piv-${a._i}" placeholder="Paste Google Photos link..."/>
+       <button onclick="savePhoto(${a._i})">Save</button>
+     </div>`;
+  return`<div class="card${isUpcoming?' upcoming':''}" style="--tc:${c}">
+    <div class="card-top">
+      <div class="card-name">${IC[a.type]||'🌟'} ${a.name}</div>
+      <span class="tbadge">${a.type}</span>
+    </div>
+    <div class="meta">
+      <span class="mi">📅 ${fd2(a.date)}</span>
+      <span class="mi">📍 ${[a.region,a.country].filter(Boolean).join(', ')}</span>
+      ${a.who?`<span class="mi who">👥 ${a.who}</span>`:''}
+    </div>
+    <div class="card-actions">${countdownHtml}${photosBtn}<button class="edit-btn" onclick="openEdit(${a._i})">✏️ Edit</button></div>
+  </div>`;
 }
 
 function rl(q){
@@ -299,7 +362,6 @@ function rl(q){
   const fType=document.getElementById('fType')?.value||'';
   const fCountry=document.getElementById('fCountry')?.value||'';
   const fBuddy=document.getElementById('fBuddy')?.value||'';
-
   const today=new Date();today.setHours(0,0,0,0);
 
   let filtered=[...av].map((a,i)=>({...a,_i:i})).filter(a=>{
@@ -313,7 +375,6 @@ function rl(q){
   });
 
   filtered.sort((a,b)=>b.date.localeCompare(a.date));
-
   document.getElementById('badge').textContent=av.length;
   const el=document.getElementById('ll');
   if(!filtered.length){el.innerHTML='<div class="empty"><div class="icon">🔍</div>No adventures found</div>';return;}
@@ -321,36 +382,9 @@ function rl(q){
   const upcoming=filtered.filter(a=>new Date(a.date+'T00:00:00')>today);
   const past=filtered.filter(a=>new Date(a.date+'T00:00:00')<=today);
 
-  function renderCard(a){
-    const c=TC[a.type]||'#e94560';
-    const advDate=new Date(a.date+'T00:00:00');
-    const isUpcoming=advDate>today;
-    const daysUntil=Math.ceil((advDate-today)/(1000*60*60*24));
-    const countdownHtml=isUpcoming?`<span class="countdown-badge">⏳ ${daysUntil} day${daysUntil===1?'':'s'} away</span>`:'';
-    const photosBtn=a.photos
-      ?`<a class="photos-btn" href="${a.photos}" target="_blank">📷 Photos</a>`
-      :`<button class="add-photos-btn" onclick="showPhotoInput(${a._i})">＋ Add Photos</button>
-       <div class="photos-input-row" id="pi-${a._i}" style="display:none">
-         <input type="url" id="piv-${a._i}" placeholder="Paste Google Photos link..."/>
-         <button onclick="savePhoto(${a._i})">Save</button>
-       </div>`;
-    return`<div class="card${isUpcoming?' upcoming':''}" style="--tc:${c}">
-      <div class="card-top">
-        <div class="card-name">${IC[a.type]||'🌟'} ${a.name}</div>
-        <span class="tbadge">${a.type}</span>
-      </div>
-      <div class="meta">
-        <span class="mi">📅 ${fd2(a.date)}</span>
-        <span class="mi">📍 ${[a.region,a.country].filter(Boolean).join(', ')}</span>
-        ${a.who?`<span class="mi who">👥 ${a.who}</span>`:''}
-      </div>
-      <div class="card-actions">${countdownHtml}${photosBtn}<button class="edit-btn" onclick="openEdit(${a._i})">✏️ Edit</button></div>
-    </div>`;
-  }
-
   let html='';
   if(upcoming.length){
-    html+=`<div>
+    html+=`<div style="margin-bottom:10px">
       <div class="upcoming-header" onclick="toggleUpcoming()">
         <span class="upcoming-title">⚡ Upcoming (${upcoming.length})</span>
         <span class="upcoming-chevron" id="upcomingChevron">▼</span>
@@ -363,25 +397,6 @@ function rl(q){
   html+=past.map(renderCard).join('');
   el.innerHTML=html;
 }
-    const today=new Date();today.setHours(0,0,0,0);
-const advDate=new Date(a.date+'T00:00:00');
-const isUpcoming=advDate>today;
-const daysUntil=Math.ceil((advDate-today)/(1000*60*60*24));
-const countdownHtml=isUpcoming?`<span class="countdown-badge">⏳ ${daysUntil} day${daysUntil===1?'':'s'} away</span>`:'';
-return`<div class="card${isUpcoming?' upcoming':''}" style="--tc:${c}">
-      <div class="card-top">
-        <div class="card-name">${IC[a.type]||'🌟'} ${a.name}</div>
-        <span class="tbadge">${a.type}</span>
-      </div>
-      <div class="meta">
-        <span class="mi">📅 ${fd2(a.date)}</span>
-        <span class="mi">📍 ${[a.region,a.country].filter(Boolean).join(', ')}</span>
-        ${a.who?`<span class="mi who">👥 ${a.who}</span>`:''}
-      </div>
-      <div class="card-actions">${countdownHtml}${photosBtn}<button class="edit-btn" onclick="openEdit(${a._i})">✏️ Edit</button></div>
-    </div>`;
-  }).join('');
-}
 
 function rs(){
   const yr=new Date().getFullYear();
@@ -393,6 +408,7 @@ function rs(){
   document.getElementById('sy').textContent=ty.length;
   document.getElementById('sc2').textContent=ctr.size;
   document.getElementById('sp').textContent=Object.keys(bc).length;
+
   const years=[...new Set(av.map(a=>gy(a.date)).filter(y=>y>2000))].sort((a,b)=>b-a);
   document.getElementById('sm').innerHTML=years.map(yr=>{
     const yav=av.filter(a=>gy(a.date)===yr);
@@ -403,12 +419,14 @@ function rs(){
       return`<div class="br"><span class="bl">${m}</span><div class="bt"><div class="bf" style="width:${(c/mm)*100}%"></div></div><span class="bc">${c}</span></div>`;
     }).join('')+'</div>';
   }).join('');
+
   const tc2={};av.forEach(a=>{if(a.type)tc2[a.type]=(tc2[a.type]||0)+1;});
   const st2=Object.entries(tc2).sort((a,b)=>b[1]-a[1]);
   const mt=st2[0]?.[1]||1;
   document.getElementById('sty').innerHTML=st2.map(([t,c])=>
     `<div class="br"><span class="bl">${IC[t]||'🌟'} ${t}</span><div class="bt"><div class="bf" style="width:${(c/mt)*100}%;background:${TC[t]||'#e94560'}"></div></div><span class="bc">${c}</span></div>`
   ).join('');
+
   const sb2=Object.entries(bc).sort((a,b)=>b[1]-a[1]);
   const mb=sb2[0]?.[1]||1;
   document.getElementById('sb').innerHTML=sb2.map(([n,c])=>
@@ -422,8 +440,8 @@ function sv(n,btn){
   document.getElementById('view-'+n).classList.add('active');
   btn.classList.add('active');
   if(n==='stats')rs();
-if(n==='log')rl();
-if(n==='map')setTimeout(initMap,100);
+  if(n==='log')rl();
+  if(n==='map')setTimeout(initMap,300);
 }
 
 function add(){
@@ -450,150 +468,8 @@ function add(){
     rl();
   },800);
 }
-const GEOCODE={
-  'Belfast':[54.5973,-5.9301],
-  'Wales':[51.8,-3.5],
-  'Bradford-on-Avon':[51.3462,-2.2513],
-  'Cardiff':[51.4816,-3.1791],
-  'London':[51.5074,-0.1278],
-  'Henley-on-Thames':[51.5354,-0.9008],
-  'Chipping Sodbury':[51.5367,-2.3939],
-  'Lincolnshire':[53.1,-0.3],
-  'Oxford':[51.7520,-1.2577],
-  'Frampton Cotterell':[51.5167,-2.4833],
-  'Badminton':[51.5333,-2.1333],
-  'Tenerife':[28.2916,-16.6291],
-  'Calgary':[51.0447,-114.0719],
-  'Banff':[51.1784,-115.5708],
-  'Calgary, Banff':[51.1,-114.5],
-  'West Sussex':[50.9,-0.5],
-  'Yate':[51.5411,-2.4184],
-  'Exmouth':[50.6186,-3.4130],
-  'Bristol':[51.4545,-2.5879],
-  'Silverstone':[52.0786,-1.0169],
-  'Wiltshire':[51.3,-1.9],
-  'Dublin':[53.3498,-6.2603],
-  'Lake District, Scotland, Peak District':[54.5,-3.0],
-  'Lake District':[54.5,-3.0],
-  'Scotland':[57.0,-4.0],
-  'Peak District':[53.3,-1.8],
-  'Canada':[56.1304,-106.3468],
-  'Spain':[40.4168,-3.7038],
-  'UK':[52.5,-1.5]
-};
 
-let mapInstance=null;
-
-function getCoords(a){
-  if(GEOCODE[a.region])return GEOCODE[a.region];
-  if(GEOCODE[a.country])return GEOCODE[a.country];
-  return null;
-}
-
-function initMap(){
-  if(mapInstance){mapInstance.invalidateSize();return;}
-  mapInstance=L.map('mapid').setView([51.5,-2.5],5);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-    attribution:'© OpenStreetMap © CARTO',maxZoom:18
-  }).addTo(mapInstance);
-  setTimeout(()=>mapInstance.invalidateSize(),200);
-
-  const locMap={};
-  av.forEach((a,i)=>{
-    const coords=getCoords(a);
-    if(!coords)return;
-    const key=coords.join(',');
-    if(!locMap[key])locMap[key]={coords,adventures:[]};
-    locMap[key].adventures.push({...a,_i:i});
-  });
-
-  Object.values(locMap).forEach(loc=>{
-    const {coords,adventures}=loc;
-    const count=adventures.length;
-    const color=count>1?'#f5a623':(TC[adventures[0].type]||'#e94560');
-    const marker=L.circleMarker(coords,{
-      radius:count>1?14:10,
-      fillColor:color,
-      color:'#fff',
-      weight:2,
-      opacity:1,
-      fillOpacity:0.9
-    }).addTo(mapInstance);
-
-    if(count>1){
-      marker.bindTooltip(`${count}`,{permanent:true,direction:'center',className:'cluster-label'});
-    }
-
-    marker.on('click',()=>showMapCard(adventures));
-  });
-}
-
-function showMapCard(adventures){
-  const el=document.getElementById('mapCardContent');
-  if(adventures.length===1){
-    const a=adventures[0];
-    const c=TC[a.type]||'#e94560';
-    el.innerHTML=`
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px">
-        <div class="card-name">${IC[a.type]||'🌟'} ${a.name}</div>
-        <span class="tbadge" style="background:${c}">${a.type}</span>
-      </div>
-      <div class="meta">
-        <span class="mi">📅 ${fd2(a.date)}</span>
-        <span class="mi">📍 ${[a.region,a.country].filter(Boolean).join(', ')}</span>
-        ${a.who?`<span class="mi who">👥 ${a.who}</span>`:''}
-      </div>
-      <div class="card-actions">
-        ${a.photos?`<a class="photos-btn" href="${a.photos}" target="_blank">📷 Photos</a>`:''}
-      </div>`;
-  } else {
-    el.innerHTML=`
-      <div style="font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:12px">${adventures.length} adventures here</div>
-      ${adventures.map(a=>{
-        const c=TC[a.type]||'#e94560';
-        return`<div style="border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:10px">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
-            <div style="font-size:14px;font-weight:700">${IC[a.type]||'🌟'} ${a.name}</div>
-            <span class="tbadge" style="background:${c}">${a.type}</span>
-          </div>
-          <div class="meta">
-            <span class="mi">📅 ${fd2(a.date)}</span>
-            ${a.who?`<span class="mi who">👥 ${a.who}</span>`:''}
-          </div>
-          ${a.photos?`<div style="margin-top:6px"><a class="photos-btn" href="${a.photos}" target="_blank">📷 Photos</a></div>`:''}
-        </div>`;
-      }).join('')}`;
-  }
-  document.getElementById('mapCard').classList.add('show');
-}
-
-function closeMapCard(){
-  document.getElementById('mapCard').classList.remove('show');
-}
-document.getElementById('fd').value=new Date().toISOString().split('T')[0];
-function toggleUpcoming(){
-  const body=document.getElementById('upcomingBody');
-  const chev=document.getElementById('upcomingChevron');
-  if(body){body.classList.toggle('open');chev.classList.toggle('open');}
-}
-
-function toggleFilter(){
-  const panel=document.getElementById('filterPanel');
-  const btn=document.getElementById('filterToggle');
-  panel.classList.toggle('open');
-  btn.classList.toggle('active');
-}
-
-function clearFilters(){
-  ['fMonth','fYear','fType','fCountry','fBuddy'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.value='';
-  });
-  rl();
-}
-  rl();
-  let editIdx=null;
-
+let editIdx=null;
 function openEdit(idx){
   editIdx=idx;
   const a=av[idx];
@@ -606,16 +482,13 @@ function openEdit(idx){
   document.getElementById('ep').value=a.photos||'';
   document.getElementById('editModal').classList.add('show');
 }
-
 function closeEdit(){
   document.getElementById('editModal').classList.remove('show');
   editIdx=null;
 }
-
 function saveEdit(){
   if(editIdx===null)return;
-  av[editIdx]={
-    ...av[editIdx],
+  av[editIdx]={...av[editIdx],
     date:document.getElementById('ed').value,
     name:document.getElementById('en').value.trim(),
     type:document.getElementById('et').value,
@@ -627,50 +500,59 @@ function saveEdit(){
   save(av);
   closeEdit();
   showToast('✓ Adventure updated!');
-  const GEOCODE={
-  'Belfast':[54.5973,-5.9301],
-  'Wales':[51.8,-3.5],
-  'Bradford-on-Avon':[51.3462,-2.2513],
-  'Cardiff':[51.4816,-3.1791],
-  'London':[51.5074,-0.1278],
-  'Henley-on-Thames':[51.5354,-0.9008],
-  'Chipping Sodbury':[51.5367,-2.3939],
-  'Lincolnshire':[53.1,-0.3],
-  'Oxford':[51.7520,-1.2577],
-  'Frampton Cotterell':[51.5167,-2.4833],
-  'Badminton':[51.5333,-2.1333],
-  'Tenerife':[28.2916,-16.6291],
-  'Calgary':[51.0447,-114.0719],
-  'Banff':[51.1784,-115.5708],
-  'Calgary, Banff':[51.1,-114.5],
-  'West Sussex':[50.9,-0.5],
-  'Yate':[51.5411,-2.4184],
-  'Exmouth':[50.6186,-3.4130],
-  'Wales (Wye Valley)':[51.8,-2.7],
-  'Bristol':[51.4545,-2.5879],
-  'Silverstone':[52.0786,-1.0169],
-  'Wiltshire':[51.3,-1.9],
-  'Dublin':[53.3498,-6.2603],
-  'Lake District, Scotland, Peak District':[54.5,-3.0],
-  'Peak District':[53.3,-1.8],
+  rl();
+}
+
+function toggleUpcoming(){
+  const body=document.getElementById('upcomingBody');
+  const chev=document.getElementById('upcomingChevron');
+  if(body){body.classList.toggle('open');chev.classList.toggle('open');}
+}
+function toggleFilter(){
+  const panel=document.getElementById('filterPanel');
+  const btn=document.getElementById('filterToggle');
+  panel.classList.toggle('open');
+  btn.classList.toggle('active');
+}
+function clearFilters(){
+  ['fMonth','fYear','fType','fCountry','fBuddy'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  rl();
+}
+function toggleSS(id){
+  const body=document.getElementById(id);
+  const chev=document.getElementById('chev-'+id);
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+const GEOCODE={
+  'Belfast':[54.5973,-5.9301],'Wales':[51.8,-3.5],'Bradford-on-Avon':[51.3462,-2.2513],
+  'Cardiff':[51.4816,-3.1791],'London':[51.5074,-0.1278],'Henley-on-Thames':[51.5354,-0.9008],
+  'Chipping Sodbury':[51.5367,-2.3939],'Lincolnshire':[53.1,-0.3],'Oxford':[51.7520,-1.2577],
+  'Frampton Cotterell':[51.5167,-2.4833],'Badminton':[51.5333,-2.1333],'Tenerife':[28.2916,-16.6291],
+  'Calgary':[51.0447,-114.0719],'Banff':[51.1784,-115.5708],'Calgary, Banff':[51.1,-114.5],
+  'West Sussex':[50.9,-0.5],'Yate':[51.5411,-2.4184],'Exmouth':[50.6186,-3.4130],
+  'Bristol':[51.4545,-2.5879],'Silverstone':[52.0786,-1.0169],'Wiltshire':[51.3,-1.9],
+  'Dublin':[53.3498,-6.2603],'Lake District, Scotland, Peak District':[54.5,-3.0],
+  'Lake District':[54.5,-3.0],'Scotland':[57.0,-4.0],'Peak District':[53.3,-1.8],
+  'Canada':[56.1304,-106.3468],'Spain':[40.4168,-3.7038],'UK':[52.5,-1.5]
 };
 
 let mapInstance=null;
-
 function getCoords(a){
   if(GEOCODE[a.region])return GEOCODE[a.region];
   if(GEOCODE[a.country])return GEOCODE[a.country];
   return null;
 }
-
 function initMap(){
   if(mapInstance){mapInstance.invalidateSize();return;}
   mapInstance=L.map('mapid').setView([51.5,-2.5],5);
- L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
     attribution:'© OpenStreetMap © CARTO',maxZoom:18
   }).addTo(mapInstance);
-
-  // group adventures by location
+  setTimeout(()=>mapInstance.invalidateSize(),200);
   const locMap={};
   av.forEach((a,i)=>{
     const coords=getCoords(a);
@@ -679,115 +561,42 @@ function initMap(){
     if(!locMap[key])locMap[key]={coords,adventures:[]};
     locMap[key].adventures.push({...a,_i:i});
   });
-
   Object.values(locMap).forEach(loc=>{
-    const {coords,adventures}=loc;
-    // if multiple adventures, use a cluster style marker
+    const{coords,adventures}=loc;
     const count=adventures.length;
     const color=count>1?'#f5a623':(TC[adventures[0].type]||'#e94560');
-    const marker=L.circleMarker(coords,{
-      radius:count>1?14:10,
-      fillColor:color,
-      color:'#fff',
-      weight:2,
-      opacity:1,
-      fillOpacity:0.9
-    }).addTo(mapInstance);
-
-    if(count>1){
-      marker.bindTooltip(`${count}`,{permanent:true,direction:'center',className:'cluster-label'});
-    }
-
+    const marker=L.circleMarker(coords,{radius:count>1?14:10,fillColor:color,color:'#fff',weight:2,opacity:1,fillOpacity:0.9}).addTo(mapInstance);
+    if(count>1)marker.bindTooltip(`${count}`,{permanent:true,direction:'center',className:'cluster-label'});
     marker.on('click',()=>showMapCard(adventures));
   });
 }
-
 function showMapCard(adventures){
   const el=document.getElementById('mapCardContent');
   if(adventures.length===1){
-    const a=adventures[0];
-    const c=TC[a.type]||'#e94560';
-    el.innerHTML=`
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px">
-        <div class="card-name">${IC[a.type]||'🌟'} ${a.name}</div>
-        <span class="tbadge" style="background:${c}">${a.type}</span>
-      </div>
-      <div class="meta">
-        <span class="mi">📅 ${fd2(a.date)}</span>
-        <span class="mi">📍 ${[a.region,a.country].filter(Boolean).join(', ')}</span>
-        ${a.who?`<span class="mi who">👥 ${a.who}</span>`:''}
-      </div>
-      <div class="card-actions">
-        ${a.photos?`<a class="photos-btn" href="${a.photos}" target="_blank">📷 Photos</a>`:''}
-      </div>`;
-  } else {
-    el.innerHTML=`
-      <div style="font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:12px">${adventures.length} adventures here</div>
-      ${adventures.map(a=>{
-        const c=TC[a.type]||'#e94560';
-        return`<div style="border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:10px">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
-            <div style="font-size:14px;font-weight:700">${IC[a.type]||'🌟'} ${a.name}</div>
-            <span class="tbadge" style="background:${c}">${a.type}</span>
-          </div>
-          <div class="meta">
-            <span class="mi">📅 ${fd2(a.date)}</span>
-            ${a.who?`<span class="mi who">👥 ${a.who}</span>`:''}
-          </div>
-          ${a.photos?`<div style="margin-top:6px"><a class="photos-btn" href="${a.photos}" target="_blank">📷 Photos</a></div>`:''}
-        </div>`;
-      }).join('')}`;
+    const a=adventures[0];const c=TC[a.type]||'#e94560';
+    el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px">
+      <div class="card-name">${IC[a.type]||'🌟'} ${a.name}</div>
+      <span class="tbadge" style="background:${c}">${a.type}</span></div>
+      <div class="meta"><span class="mi">📅 ${fd2(a.date)}</span>
+      <span class="mi">📍 ${[a.region,a.country].filter(Boolean).join(', ')}</span>
+      ${a.who?`<span class="mi who">👥 ${a.who}</span>`:''}</div>
+      <div class="card-actions">${a.photos?`<a class="photos-btn" href="${a.photos}" target="_blank">📷 Photos</a>`:''}</div>`;
+  }else{
+    el.innerHTML=`<div style="font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:12px">${adventures.length} adventures here</div>`+
+    adventures.map(a=>{const c=TC[a.type]||'#e94560';return`<div style="border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
+      <div style="font-size:14px;font-weight:700">${IC[a.type]||'🌟'} ${a.name}</div>
+      <span class="tbadge" style="background:${c}">${a.type}</span></div>
+      <div class="meta"><span class="mi">📅 ${fd2(a.date)}</span>
+      ${a.who?`<span class="mi who">👥 ${a.who}</span>`:''}</div>
+      ${a.photos?`<div style="margin-top:6px"><a class="photos-btn" href="${a.photos}" target="_blank">📷 Photos</a></div>`:''}</div>`;}).join('');
   }
   document.getElementById('mapCard').classList.add('show');
 }
+function closeMapCard(){document.getElementById('mapCard').classList.remove('show');}
 
-function closeMapCard(){
-  document.getElementById('mapCard').classList.remove('show');
-}
-  rl(document.querySelector('.search').value);
-}
-  function toggleSS(id){
-  const body=document.getElementById(id);
-  const chev=document.getElementById('chev-'+id);
-  body.classList.toggle('open');
-  chev.classList.toggle('open');
-}
+document.getElementById('fd').value=new Date().toISOString().split('T')[0];
+rl();
 </script>
-  <div class="view" id="view-map">
-  <div id="mapid"></div>
-</div>
-<div class="map-card-overlay" id="mapCard">
-  <button class="map-close" onclick="closeMapCard()">✕</button>
-  <div id="mapCardContent"></div>
-</div>
-  <div class="modal-overlay" id="editModal">
-  <div class="modal">
-    <h2>Edit Adventure</h2>
-    <div class="fg"><label>Date</label><input type="date" id="ed"/></div>
-    <div class="fg"><label>Adventure Name</label><input type="text" id="en" placeholder="e.g. Pen Y Fan Sunrise"/></div>
-    <div class="fg">
-      <label>Type</label>
-      <select id="et">
-        <option value="">Select type...</option>
-        <option>Hike</option><option>Run</option><option>OCR</option><option>Marathon</option>
-        <option>Trail Run</option><option>Road Trip</option><option>Holiday</option>
-        <option>Climb</option><option>Swim</option><option>Beach/Water</option>
-        <option>Gym/Training</option><option>Kayak/SUP</option><option>City Break</option>
-        <option>Gig</option><option>Photo Mission</option><option>Festival/Event</option>
-        <option>Family Trip</option><option>Other</option>
-      </select>
-    </div>
-    <div class="row2">
-      <div class="fg"><label>Country</label><input type="text" id="ec" placeholder="e.g. UK"/></div>
-      <div class="fg"><label>Region</label><input type="text" id="er" placeholder="e.g. Wales"/></div>
-    </div>
-    <div class="fg"><label>Who With</label><input type="text" id="ew" placeholder="e.g. Helen, Theo"/></div>
-    <div class="fg"><label>Google Photos Link</label><input type="url" id="ep" placeholder="https://photos.app.goo.gl/..."/></div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeEdit()">Cancel</button>
-      <button class="btn" style="flex:1" onclick="saveEdit()">Save Changes</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>

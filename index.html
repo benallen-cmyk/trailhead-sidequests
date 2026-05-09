@@ -86,6 +86,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .map-card-overlay .meta{margin-bottom:12px}
 .map-close{position:absolute;top:16px;right:16px;background:var(--border);border:none;color:var(--text);border-radius:50%;width:28px;height:28px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .cluster-label{background:none!important;border:none!important;box-shadow:none!important;color:#fff!important;font-weight:700!important;font-size:11px!important}
+.card.upcoming{border-color:#f5a623;box-shadow:0 0 12px rgba(245,166,35,0.3)}
+.countdown-badge{display:inline-flex;align-items:center;background:rgba(245,166,35,0.15);color:var(--accent2);border:1px solid var(--accent2);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700}
 </style>
 </head>
 <body>
@@ -250,7 +252,12 @@ function rl(q=''){
          <input type="url" id="piv-${a._i}" placeholder="Paste Google Photos link..."/>
          <button onclick="savePhoto(${a._i})">Save</button>
        </div>`;
-    return`<div class="card" style="--tc:${c}">
+    const today=new Date();today.setHours(0,0,0,0);
+const advDate=new Date(a.date+'T00:00:00');
+const isUpcoming=advDate>today;
+const daysUntil=Math.ceil((advDate-today)/(1000*60*60*24));
+const countdownHtml=isUpcoming?`<span class="countdown-badge">⏳ ${daysUntil} day${daysUntil===1?'':'s'} away</span>`:'';
+return`<div class="card${isUpcoming?' upcoming':''}" style="--tc:${c}">
       <div class="card-top">
         <div class="card-name">${IC[a.type]||'🌟'} ${a.name}</div>
         <span class="tbadge">${a.type}</span>
@@ -260,7 +267,7 @@ function rl(q=''){
         <span class="mi">📍 ${[a.region,a.country].filter(Boolean).join(', ')}</span>
         ${a.who?`<span class="mi who">👥 ${a.who}</span>`:''}
       </div>
-      <div class="card-actions">${photosBtn}<button class="edit-btn" onclick="openEdit(${a._i})">✏️ Edit</button></div>
+      <div class="card-actions">${countdownHtml}${photosBtn}<button class="edit-btn" onclick="openEdit(${a._i})">✏️ Edit</button></div>
     </div>`;
   }).join('');
 }

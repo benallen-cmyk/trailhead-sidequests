@@ -417,8 +417,8 @@ function rs(){
   document.getElementById('sc2').textContent=ctr.size;
   document.getElementById('sp').textContent=Object.keys(bc).length;
 
-  const years=[...new Set(av.map(a=>gy(a.date)).filter(y=>y>2000))].sort((a,b)=>b-a);
-  document.getElementById('sm').innerHTML=years.map(yr=>{
+  const reviewYears=[...new Set(av.map(a=>gy(a.date)).filter(y=>y>2000))].sort((a,b)=>b-a);
+  document.getElementById('sm').innerHTML=reviewYears.map(year=>{
     const yav=av.filter(a=>gy(a.date)===yr);
     const mm=Math.max(...MN.map((_,i)=>yav.filter(a=>gm(a.date)===i).length),1);
     return`<div style="margin-bottom:20px"><div style="font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:8px">${yr}</div>`+

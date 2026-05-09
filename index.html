@@ -625,8 +625,8 @@ function buildYearlyReviews(){
   const el=document.getElementById('yearlyReviews');
   if(!el)return;
 
-  el.innerHTML=years.map(yr=>{
-    const yav=av.filter(a=>gy(a.date)===yr);
+  el.innerHTML=years.map(year=>{
+    const yav=av.filter(a=>gy(a.date)===year);
     if(!yav.length)return'';
 
     // most adventurous month
@@ -650,7 +650,7 @@ function buildYearlyReviews(){
     const solo=yav.filter(a=>!a.who||a.who.trim()==='').length;
 
     return`<div class="review-card">
-      <div class="review-year">${yr} in Review</div>
+      <div class="review-year">${year} in Review</div>
       <div class="review-title">${yav.length} Adventures ${countries.map(c=>countryFlag(c)).join(' ')}</div>
       <div class="review-grid">
         <div class="review-stat"><div class="rlabel">Busiest Month</div><div class="rvalue">${topMonth.m} <span>(${topMonth.count})</span></div></div>

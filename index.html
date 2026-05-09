@@ -86,6 +86,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .bt{flex:1;background:var(--border);border-radius:4px;height:8px;overflow:hidden}
 .bf{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
 .bc{font-size:12px;font-weight:700;color:var(--accent2);width:24px;text-align:right;flex-shrink:0}
+.review-card{background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.review-year{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.review-title{font-size:22px;font-weight:800;color:var(--text);margin-bottom:16px}
+.review-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.review-stat{background:rgba(255,255,255,0.05);border-radius:10px;padding:12px}
+.review-stat .rlabel{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.review-stat .rvalue{font-size:15px;font-weight:700;color:var(--text)}
+.review-stat .rvalue span{color:var(--accent)}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;align-items:flex-end}
 .modal-overlay.show{display:flex}
 .modal{background:var(--card);border-radius:var(--radius) var(--radius) 0 0;padding:20px;width:100%;max-height:90vh;overflow-y:auto}
@@ -100,14 +108,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px}
 .empty .icon{font-size:40px;margin-bottom:10px}
-.review-card{background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
-.review-year{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
-.review-title{font-size:22px;font-weight:800;color:var(--text);margin-bottom:16px}
-.review-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.review-stat{background:rgba(255,255,255,0.05);border-radius:10px;padding:12px}
-.review-stat .rlabel{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-.review-stat .rvalue{font-size:15px;font-weight:700;color:var(--text)}
-.review-stat .rvalue span{color:var(--accent)}
 </style>
 </head>
 <body>
@@ -154,12 +154,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <option>Family Trip</option><option>Other</option>
       </select>
       <select class="filter-select" id="fCountry" onchange="rl()">
-  <option value="">All Countries</option>
-</select>
+        <option value="">All Countries</option>
+      </select>
     </div>
     <select class="filter-select" id="fBuddy" onchange="rl()" style="margin-bottom:10px">
-  <option value="">All Buddies</option>
-</select>
+      <option value="">All Buddies</option>
+    </select>
     <button class="filter-clear" onclick="clearFilters()">✕ Clear Filters</button>
   </div>
   <div id="ll"></div>
@@ -358,6 +358,54 @@ function renderCard(a){
   </div>`;
 }
 
+function populateFilters(){
+  const countries=[...new Set(av.map(a=>a.country).filter(Boolean))].sort();
+  const buddyMap={};
+  av.forEach(a=>{if(!a.who)return;a.who.split(',').forEach(p=>{const n=p.trim();if(n)buddyMap[n]=(buddyMap[n]||0)+1;});});
+  const buddyList=Object.keys(buddyMap).sort();
+  const fc=document.getElementById('fCountry');
+  const fb=document.getElementById('fBuddy');
+  if(fc)fc.innerHTML='<option value="">All Countries</option>'+countries.map(c=>`<option>${c}</option>`).join('');
+  if(fb)fb.innerHTML='<option value="">All Buddies</option>'+buddyList.map(b=>`<option>${b}</option>`).join('');
+}
+
+function buildYearlyReviews(){
+  const reviewYears=[...new Set(av.map(a=>gy(a.date)).filter(y=>y>2000))].sort((a,b)=>b-a);
+  const el=document.getElementById('yearlyReviews');
+  if(!el)return;
+  el.innerHTML=reviewYears.map(year=>{
+    const yav=av.filter(a=>gy(a.date)===year);
+    if(!yav.length)return'';
+    const monthCounts=MN.map((m,i)=>({m,count:yav.filter(a=>gm(a.date)===i).length}));
+    const topMonth=monthCounts.reduce((a,b)=>b.count>a.count?b:a);
+    const bc={};
+    yav.forEach(a=>{if(!a.who)return;a.who.split(',').forEach(p=>{const n=p.trim();if(n)bc[n]=(bc[n]||0)+1;});});
+    const topBuddy=Object.entries(bc).sort((a,b)=>b[1]-a[1])[0];
+    const tc={};
+    yav.forEach(a=>{if(a.type)tc[a.type]=(tc[a.type]||0)+1;});
+    const topType=Object.entries(tc).sort((a,b)=>b[1]-a[1])[0];
+    const countries=[...new Set(yav.map(a=>a.country).filter(Boolean))];
+    const solo=yav.filter(a=>!a.who||a.who.trim()==='').length;
+    return`<div class="review-card">
+      <div class="review-year">${year} in Review</div>
+      <div class="review-title">${yav.length} Adventures ${countries.map(c=>countryFlag(c)).join(' ')}</div>
+      <div class="review-grid">
+        <div class="review-stat"><div class="rlabel">Busiest Month</div><div class="rvalue">${topMonth.m} <span>(${topMonth.count})</span></div></div>
+        ${topBuddy?`<div class="review-stat"><div class="rlabel">Top Buddy</div><div class="rvalue">${topBuddy[0]} <span>(${topBuddy[1]})</span></div></div>`:''}
+        ${topType?`<div class="review-stat"><div class="rlabel">Favourite Type</div><div class="rvalue">${IC[topType[0]]||'🌟'} ${topType[0]}</div></div>`:''}
+        <div class="review-stat"><div class="rlabel">Countries</div><div class="rvalue">${countries.join(', ')}</div></div>
+        <div class="review-stat"><div class="rlabel">Solo</div><div class="rvalue"><span>${solo}</span> of ${yav.length}</div></div>
+        <div class="review-stat"><div class="rlabel">With Others</div><div class="rvalue"><span>${yav.length-solo}</span> of ${yav.length}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function countryFlag(c){
+  const flags={UK:'🇬🇧',Spain:'🇪🇸',Canada:'🇨🇦',USA:'🇺🇸',France:'🇫🇷',Italy:'🇮🇹',Germany:'🇩🇪',Ireland:'🇮🇪'};
+  return flags[c]||'🌍';
+}
+
 function rl(q){
   if(q===undefined)q=document.getElementById('searchInput')?.value||'';
   q=q.toLowerCase();
@@ -403,12 +451,10 @@ function rl(q){
 }
 
 function rs(){
-  function rs(){
   populateFilters();
   buildYearlyReviews();
-  const yr=new Date().getFullYear();
-  const yr=new Date().getFullYear();
-  const ty=av.filter(a=>gy(a.date)===yr);
+  const thisYear=new Date().getFullYear();
+  const ty=av.filter(a=>gy(a.date)===thisYear);
   const ctr=new Set(av.map(a=>a.country).filter(Boolean));
   const bc={};
   av.forEach(a=>{if(!a.who)return;a.who.split(',').forEach(p=>{const n=p.trim();if(n)bc[n]=(bc[n]||0)+1;});});
@@ -417,11 +463,11 @@ function rs(){
   document.getElementById('sc2').textContent=ctr.size;
   document.getElementById('sp').textContent=Object.keys(bc).length;
 
-  const reviewYears=[...new Set(av.map(a=>gy(a.date)).filter(y=>y>2000))].sort((a,b)=>b-a);
-  document.getElementById('sm').innerHTML=reviewYears.map(year=>{
-    const yav=av.filter(a=>gy(a.date)===yr);
+  const reviewYears2=[...new Set(av.map(a=>gy(a.date)).filter(y=>y>2000))].sort((a,b)=>b-a);
+  document.getElementById('sm').innerHTML=reviewYears2.map(yr2=>{
+    const yav=av.filter(a=>gy(a.date)===yr2);
     const mm=Math.max(...MN.map((_,i)=>yav.filter(a=>gm(a.date)===i).length),1);
-    return`<div style="margin-bottom:20px"><div style="font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:8px">${yr}</div>`+
+    return`<div style="margin-bottom:20px"><div style="font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:8px">${yr2}</div>`+
     MN.map((m,i)=>{
       const c=yav.filter(a=>gm(a.date)===i).length;
       return`<div class="br"><span class="bl">${m}</span><div class="bt"><div class="bf" style="width:${(c/mm)*100}%"></div></div><span class="bc">${c}</span></div>`;
@@ -467,6 +513,7 @@ function add(){
   ['fd','fn','fc','fr','fw','fp'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('ft').value='';
   document.getElementById('fd').value=new Date().toISOString().split('T')[0];
+  populateFilters();
   showToast('✓ Adventure saved!');
   setTimeout(()=>{
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -507,6 +554,7 @@ function saveEdit(){
   };
   save(av);
   closeEdit();
+  populateFilters();
   showToast('✓ Adventure updated!');
   rl();
 }
@@ -604,72 +652,8 @@ function showMapCard(adventures){
 function closeMapCard(){document.getElementById('mapCard').classList.remove('show');}
 
 document.getElementById('fd').value=new Date().toISOString().split('T')[0];
-function populateFilters(){
-  const countries=[...new Set(av.map(a=>a.country).filter(Boolean))].sort();
-  const buddies={};
-  av.forEach(a=>{if(!a.who)return;a.who.split(',').forEach(p=>{const n=p.trim();if(n)buddies[n]=(buddies[n]||0)+1;});});
-  const buddyList=Object.keys(buddies).sort();
-
-  const fc=document.getElementById('fCountry');
-  const fb=document.getElementById('fBuddy');
-  if(fc){
-    fc.innerHTML='<option value="">All Countries</option>'+countries.map(c=>`<option>${c}</option>`).join('');
-  }
-  if(fb){
-    fb.innerHTML='<option value="">All Buddies</option>'+buddyList.map(b=>`<option>${b}</option>`).join('');
-  }
-}
-
-function buildYearlyReviews(){
-  const years=[...new Set(av.map(a=>gy(a.date)).filter(y=>y>2000))].sort((a,b)=>b-a);
-  const el=document.getElementById('yearlyReviews');
-  if(!el)return;
-
-  el.innerHTML=years.map(year=>{
-    const yav=av.filter(a=>gy(a.date)===year);
-    if(!yav.length)return'';
-
-    // most adventurous month
-    const monthCounts=MN.map((m,i)=>({m,count:yav.filter(a=>gm(a.date)===i).length}));
-    const topMonth=monthCounts.reduce((a,b)=>b.count>a.count?b:a);
-
-    // top buddy
-    const bc={};
-    yav.forEach(a=>{if(!a.who)return;a.who.split(',').forEach(p=>{const n=p.trim();if(n)bc[n]=(bc[n]||0)+1;});});
-    const topBuddy=Object.entries(bc).sort((a,b)=>b[1]-a[1])[0];
-
-    // top type
-    const tc={};
-    yav.forEach(a=>{if(a.type)tc[a.type]=(tc[a.type]||0)+1;});
-    const topType=Object.entries(tc).sort((a,b)=>b[1]-a[1])[0];
-
-    // countries
-    const countries=[...new Set(yav.map(a=>a.country).filter(Boolean))];
-
-    // solo adventures
-    const solo=yav.filter(a=>!a.who||a.who.trim()==='').length;
-
-    return`<div class="review-card">
-      <div class="review-year">${year} in Review</div>
-      <div class="review-title">${yav.length} Adventures ${countries.map(c=>countryFlag(c)).join(' ')}</div>
-      <div class="review-grid">
-        <div class="review-stat"><div class="rlabel">Busiest Month</div><div class="rvalue">${topMonth.m} <span>(${topMonth.count})</span></div></div>
-        ${topBuddy?`<div class="review-stat"><div class="rlabel">Top Buddy</div><div class="rvalue">${topBuddy[0]} <span>(${topBuddy[1]})</span></div></div>`:''}
-        ${topType?`<div class="review-stat"><div class="rlabel">Favourite Type</div><div class="rvalue">${IC[topType[0]]||'🌟'} ${topType[0]}</div></div>`:''}
-        <div class="review-stat"><div class="rlabel">Countries</div><div class="rvalue">${countries.join(', ')}</div></div>
-        <div class="review-stat"><div class="rlabel">Solo Adventures</div><div class="rvalue"><span>${solo}</span> of ${yav.length}</div></div>
-        <div class="review-stat"><div class="rlabel">With Others</div><div class="rvalue"><span>${yav.length-solo}</span> of ${yav.length}</div></div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function countryFlag(c){
-  const flags={UK:'🇬🇧',Spain:'🇪🇸',Canada:'🇨🇦',USA:'🇺🇸',France:'🇫🇷',Italy:'🇮🇹',Germany:'🇩🇪',Ireland:'🇮🇪'};
-  return flags[c]||'🌍';
-}
- populateFilters();
-  rl();
+populateFilters();
+rl();
 </script>
 </body>
 </html>

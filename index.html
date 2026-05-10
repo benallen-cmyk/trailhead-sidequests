@@ -213,10 +213,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
           fill="#F4F1E7" textLength="110" lengthAdjust="spacing">SIDEQUESTS</text>
       </svg>
     </div>
-    <div class="header-right">
-      <span class="badge" id="badge">0</span>
-      <button class="burger" onclick="openMenu()">&#9776;</button>
-    </div>
+
   </div>
 </div>
 
@@ -640,7 +637,7 @@ function rl(q){
     return true;
   });
   filtered.sort((a,b)=>b.date.localeCompare(a.date));
-  document.getElementById('badge').textContent=av.length;
+  const b=document.getElementById('badge');if(b)b.textContent=av.length;
   const el=document.getElementById('ll');
   if(!filtered.length){el.innerHTML='<div class="empty"><div class="icon">&#x1F50D;</div>No adventures found</div>';return;}
   const upcoming=filtered.filter(a=>new Date(a.date+'T00:00:00')>today);
